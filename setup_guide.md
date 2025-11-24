@@ -14,7 +14,7 @@ This guide details how to deploy the Grok Trading Bot System to a VPS (Virtual P
 
 1.  **Connect to your VPS** via SSH:
     ```bash
-    ssh user@your_vps_ip
+    ssh trader@46.224.77.149
     ```
 
 2.  **Clone the Repository** (or upload your files):
@@ -43,9 +43,9 @@ You need to set your Alpaca API credentials.
     For VPS, it's often easiest to export them in your session or add to `.bashrc`.
 
     ```bash
-    export APCA_API_KEY_ID='PKWXWUDCYO6MWM552BTL5RKN2X'
-    export APCA_API_SECRET_KEY='J6fYWkzcXhAibRg6eapMwjwXH5musxgTP27SeGGqsJ6R'
-    export APCA_API_BASE_URL='https://paper-api.alpaca.markets'  
+export APCA_API_KEY_ID='PKWXWUDCYO6MWM552BTL5RKN2X'
+export APCA_API_SECRET_KEY='J6fYWkzcXhAibRg6eapMwjwXH5musxgTP27SeGGqsJ6R'
+export APCA_API_BASE_URL='https://paper-api.alpaca.markets'  
     ```
 
 2.  **Verify Connection**:
@@ -55,6 +55,27 @@ You need to set your Alpaca API credentials.
     python grok/live_bots/check_alpaca_setup.py
     ```
     *Output should say "✅ Connected to Alpaca Account" and "✅ Market Data Access: OK".*
+
+---
+
+## 🖥️ Step 2.5: Using `tmux` for Persistence (CRITICAL)
+
+**IMPORTANT:** If you just run the bots and close your SSH window, **the bots will stop**. To keep them running 24/7, use `tmux`.
+
+1.  **Start a new tmux session**:
+    ```bash
+    tmux new -s trading
+    ```
+    *You are now inside a "virtual terminal" that won't close when you disconnect.*
+
+2.  **To Detach (leave bots running)**:
+    Press `Ctrl+B`, then release and press `D`.
+    *You will return to your main command prompt. The bots keep running in the background.*
+
+3.  **To Re-attach (check on bots)**:
+    ```bash
+    tmux attach -t trading
+    ```
 
 ---
 
@@ -132,3 +153,21 @@ Your system is running **17 Live Bots** covering Crypto, Stocks, Commodities, an
 -   **Updates**: If you modify code, restart the affected bots.
 
 **Happy Trading! 🚀**
+
+---
+
+## 🚀 Dashboard Quick Start
+
+To access the real-time dashboard:
+
+1.  **On the VPS**, run the dashboard app:
+    ```bash
+    streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0
+    ```
+    *Note: You can run this in a separate terminal window, or use `nohup` / `screen` / `tmux` to keep it running in the background.*
+
+2.  **On your Local Machine**, open your browser and go to:
+    ```
+    http://YOUR_VPS_IP:8501
+    ```
+    *(Replace `YOUR_VPS_IP` with your VPS's actual IP address)*

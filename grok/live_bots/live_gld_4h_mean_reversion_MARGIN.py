@@ -286,7 +286,7 @@ class GLDMeanReversionMarginBot:
 
         drawdown = (self.account_value_start - current_equity) / self.account_value_start
         if drawdown >= self.max_leveraged_drawdown:
-            logger.critical(".1f"            return True
+            logger.critical(f"Max drawdown limit reached ({drawdown:.1%}) - stopping bot")
         return False
 
     def emergency_close_all_positions(self):

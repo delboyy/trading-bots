@@ -219,7 +219,7 @@ class SLVMeanReversionBot:
 
         drawdown = (self.account_value_start - current_equity) / self.account_value_start
         if drawdown >= self.max_drawdown_limit:
-            logger.critical(".1f"            return True
+            logger.critical(f"Max drawdown limit reached ({drawdown:.1%}) - stopping bot")
         return False
 
     def run_strategy(self):
