@@ -129,7 +129,7 @@ class BTCVolatilityBreakoutBot:
             end_time = datetime.now()
             start_time = end_time - timedelta(hours=hours)
 
-            bars = self.api.get_bars(
+            bars = self.api.get_crypto_bars(
                 self.symbol,
                 self.timeframe,
                 start=start_time.isoformat(),
@@ -143,12 +143,12 @@ class BTCVolatilityBreakoutBot:
             data = []
             for bar in bars:
                 data.append({
-                    'timestamp': bar.timestamp,
-                    'open': float(bar.open),
-                    'high': float(bar.high),
-                    'low': float(bar.low),
-                    'close': float(bar.close),
-                    'volume': float(bar.volume)
+                    'timestamp': bar.t,
+                    'open': float(bar.o),
+                    'high': float(bar.h),
+                    'low': float(bar.l),
+                    'close': float(bar.c),
+                    'volume': float(bar.v)
                 })
 
             df = pd.DataFrame(data)

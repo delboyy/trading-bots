@@ -52,7 +52,7 @@ def check_environment():
         bars = api.get_bars('SPY', '1D', limit=1)
         if bars:
             print("✅ Market Data: Available")
-            print(f"   Latest SPY price: ${bars[0].close:.2f}")
+            print(f"   Latest SPY price: ${bars[0].c:.2f}")
         else:
             print("⚠️  Market Data: Limited")
 

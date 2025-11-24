@@ -138,12 +138,12 @@ class METAVolatilityBreakoutBot:
             data = []
             for bar in bars:
                 data.append({
-                    'timestamp': bar.timestamp,
-                    'open': float(bar.open),
-                    'high': float(bar.high),
-                    'low': float(bar.low),
-                    'close': float(bar.close),
-                    'volume': float(bar.volume)
+                    'timestamp': bar.t,
+                    'open': float(bar.o),
+                    'high': float(bar.h),
+                    'low': float(bar.l),
+                    'close': float(bar.c),
+                    'volume': float(bar.v)
                 })
 
             df = pd.DataFrame(data)

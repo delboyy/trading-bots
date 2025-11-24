@@ -122,10 +122,27 @@ class SPYDailyVolBreakoutBot:
         try:
             end_time = datetime.now()
             start_time = end_time - timedelta(days=days)
-            bars = self.api.get_bars(self.symbol, self.timeframe, start=start_time.isoformat(), end=end_time.isoformat(), limit=100)
-            if not bars: return pd.DataFrame()
-            
-            data = [{'timestamp': b.timestamp, 'open': b.open, 'high': b.high, 'low': b.low, 'close': b.close} for b in bars]
+            bars = self.api.get_bars(
+                self.symbol,
+                self.timeframe,
+                start=start_time.isoformat(),
+                end=end_time.isoformat(),
+                limit=1000
+            )
+
+            if not bars:
+                return pd.DataFrame()
+
+            data = []
+            for bar in bars:
+                data.append({
+                    'timestamp': bar.t,
+                    'open': float(bar.o),
+                    'high': float(bar.h),
+                    'low': float(bar.l),
+                    'close': float(bar.c),
+                    'volume': float(bar.v)
+                })
             df = pd.DataFrame(data)
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df = df.set_index('timestamp').sort_index()

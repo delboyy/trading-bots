@@ -160,7 +160,7 @@ class TSLAFibLocalExtremaBot:
             bars = self.api.get_bars(self.symbol, self.timeframe, limit=limit)
             if not bars: return pd.DataFrame()
             
-            data = [{'timestamp': b.timestamp, 'open': b.open, 'high': b.high, 'low': b.low, 'close': b.close} for b in bars]
+            data = [{'timestamp': b.t, 'open': b.o, 'high': b.h, 'low': b.l, 'close': b.c} for b in bars]
             df = pd.DataFrame(data)
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df = df.set_index('timestamp').sort_index()

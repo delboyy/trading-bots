@@ -43,9 +43,9 @@ You need to set your Alpaca API credentials.
     For VPS, it's often easiest to export them in your session or add to `.bashrc`.
 
     ```bash
-    export APCA_API_KEY_ID="YOUR_ALPACA_API_KEY"
-    export APCA_API_SECRET_KEY="YOUR_ALPACA_SECRET_KEY"
-    export APCA_API_BASE_URL="https://paper-api.alpaca.markets"
+    export APCA_API_KEY_ID='PKWXWUDCYO6MWM552BTL5RKN2X'
+    export APCA_API_SECRET_KEY='J6fYWkzcXhAibRg6eapMwjwXH5musxgTP27SeGGqsJ6R'
+    export APCA_API_BASE_URL='https://paper-api.alpaca.markets'  
     ```
 
 2.  **Verify Connection**:
