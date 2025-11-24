@@ -50,7 +50,7 @@ class NQ4HVolatilityBreakoutBot:
 
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
-        self.symbol = 'NQ'  # Nasdaq futures
+        self.symbol = '/NQ'  # Nasdaq-100 futures (Alpaca format)
         self.timeframe = TimeFrame.Hour * 4
         self.atr_window = 14
         self.k = 1.5
