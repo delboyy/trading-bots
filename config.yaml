@@ -1,0 +1,41 @@
+data:
+  source: yfinance
+  symbols:
+    - SPY
+    - QQQ
+    - BTC-USD
+  interval: "1h"
+  lookback: "365d"
+
+live:
+  broker: binance_testnet
+  poll_interval: 5        # seconds
+  use_websocket: false
+  base_symbol: "BTC/USDT" # for crypto example
+
+risk:
+  max_position_pct: 0.5   # max % of equity per strategy
+  max_total_leverage: 2.0
+  max_drawdown_pct: 25.0
+  stop_loss_pct: 2.0      # per trade
+  take_profit_pct: 5.0    # per trade
+
+orchestrator:
+  strategies:
+    - name: mean_reversion
+      enabled: true
+      symbol: BTC-USD
+      timeframe: "15m"
+    - name: breakout
+      enabled: false
+      symbol: BTC-USD
+      timeframe: "1h"
+    - name: momentum
+      enabled: false
+      symbol: SPY
+      timeframe: "1h"
+
+logging:
+  level: "INFO"
+  log_file: "logs/system.log"
+  trades_file: "logs/trades.jsonl"

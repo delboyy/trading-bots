@@ -1,0 +1,16 @@
+pandas
+numpy
+vectorbt
+yfinance
+ccxt
+ib_insync
+matplotlib
+ta
+pyyaml
+loguru
+websockets
+python-dotenv
+fastapi
+uvicorn
+anywidget
+mplfinance

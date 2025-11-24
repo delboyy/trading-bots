@@ -1,0 +1,14 @@
+{
+  "status": "short",
+  "pending_plan": null,
+  "position": {
+    "status": "short",
+    "entry_price": 87196.9,
+    "qty": 0.001,
+    "qty_remaining": 0.001,
+    "tp1": 86832.0,
+    "tp2": 86686.0,
+    "sl": 87236.0,
+    "tp1_hit": false
+  }
+}

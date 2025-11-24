@@ -1,0 +1,14 @@
+{
+  "status": "idle",
+  "pending_plan": {
+    "side": "long",
+    "entry": 86165.487,
+    "sl": 85816.299,
+    "tp1": 86656.013,
+    "tp2": 86959.474,
+    "impulse_start_idx": 487,
+    "impulse_end_idx": 496,
+    "plan_id": "487-496"
+  },
+  "position": null
+}
