@@ -17,6 +17,11 @@ import numpy as np
 from alpaca_trade_api import REST, TimeFrame
 import schedule
 
+# Add project root to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from grok.utils.status_tracker import StatusTracker
+
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -27,10 +32,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger('TSLA_4H_VOLATILITY_BREAKOUT')
 
+# Create logs directory
 os.makedirs('logs', exist_ok=True)
 
-class TSLA4HVolatilityBreakoutBot:
+class TSLAVolatilityBreakoutBot:
+    """Live trading bot for TSLA 4h Volatility Breakout strategy"""
+
     def __init__(self):
+        # Initialize Status Tracker
+        self.tracker = StatusTracker()
+        self.bot_id = "tsla_4h"
+        
+        # Alpaca API credentials
         self.api_key = os.getenv('APCA_API_KEY_ID')
         self.api_secret = os.getenv('APCA_API_SECRET_KEY')
         self.base_url = os.getenv('APCA_API_BASE_URL', 'https://paper-api.alpaca.markets')
@@ -203,17 +216,33 @@ class TSLA4HVolatilityBreakoutBot:
         return False
 
     def run_strategy(self):
+        """Main strategy execution"""
         try:
+            # Get account info
             account_info = self.get_account_info()
             if not account_info:
                 return
 
             current_equity = account_info['equity']
+            
+            # Get current position
+            current_position = self.get_position()
+            
+            # Update Status Dashboard
+            self.tracker.update_status(self.bot_id, {
+                'equity': current_equity,
+                'cash': account_info['cash'],
+                'position': current_position['qty'] if current_position else 0,
+                'entry_price': current_position['avg_entry_price'] if current_position else 0,
+                'unrealized_pl': current_position['unrealized_pl'] if current_position else 0
+            })
 
+            # Check max drawdown
             if self.check_max_drawdown(current_equity):
+                logger.critical("Max drawdown limit reached - stopping bot")
                 return
 
-            current_position = self.get_position()
+            # Get current position
             if current_position:
                 self.position = 1 if current_position['qty'] > 0 else -1
                 self.entry_price = current_position['avg_entry_price']

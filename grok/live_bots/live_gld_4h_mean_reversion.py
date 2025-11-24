@@ -17,6 +17,10 @@ import numpy as np
 from alpaca_trade_api import REST, TimeFrame
 import schedule
 
+# Add project root to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from grok.utils.status_tracker import StatusTracker
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +39,10 @@ class GLDMeanReversionBot:
     """Live trading bot for GLD 4h Mean Reversion strategy"""
 
     def __init__(self):
+        # Initialize Status Tracker
+        self.tracker = StatusTracker()
+        self.bot_id = "gld_4h"
+        
         # Alpaca API credentials
         self.api_key = os.getenv('APCA_API_KEY_ID')
         self.api_secret = os.getenv('APCA_API_SECRET_KEY')
@@ -220,6 +228,18 @@ class GLDMeanReversionBot:
                 return
 
             current_equity = account_info['equity']
+            
+            # Get current position
+            current_position = self.get_position()
+            
+            # Update Status Dashboard
+            self.tracker.update_status(self.bot_id, {
+                'equity': current_equity,
+                'cash': account_info['cash'],
+                'position': current_position['qty'] if current_position else 0,
+                'entry_price': current_position['avg_entry_price'] if current_position else 0,
+                'unrealized_pl': current_position['unrealized_pl'] if current_position else 0
+            })
 
             # Check max drawdown
             if self.check_max_drawdown(current_equity):
@@ -227,7 +247,7 @@ class GLDMeanReversionBot:
                 return
 
             # Get current position
-            current_position = self.get_position()
+            if current_position:
             if current_position:
                 self.position = 1 if current_position['qty'] > 0 else -1
                 self.entry_price = current_position['avg_entry_price']

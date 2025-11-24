@@ -1,0 +1,10 @@
+{
+    "test_bot_1": {
+        "equity": 105000.0,
+        "cash": 50000.0,
+        "position": 1.5,
+        "entry_price": 2000.0,
+        "unrealized_pl": 500.0,
+        "last_updated": "2025-11-24T19:54:52.067063"
+    }
+}

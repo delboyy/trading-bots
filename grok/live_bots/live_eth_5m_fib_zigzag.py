@@ -17,6 +17,10 @@ import numpy as np
 from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 import schedule
 
+# Add project root to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from grok.utils.status_tracker import StatusTracker
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +39,10 @@ class ETHFibZigzagBot:
     """Live trading bot for ETH 5m Fib Zigzag strategy"""
 
     def __init__(self):
+        # Initialize Status Tracker
+        self.tracker = StatusTracker()
+        self.bot_id = "eth_5m_zigzag"
+        
         # Alpaca API credentials
         self.api_key = os.getenv('APCA_API_KEY_ID')
         self.api_secret = os.getenv('APCA_API_SECRET_KEY')
@@ -232,6 +240,16 @@ class ETHFibZigzagBot:
             if not account: return
             
             pos = self.get_position()
+            
+            # Update Status Dashboard
+            self.tracker.update_status(self.bot_id, {
+                'equity': account['equity'],
+                'cash': account['cash'],
+                'position': pos['qty'] if pos else 0,
+                'entry_price': pos['entry'] if pos else 0,
+                'unrealized_pl': pos['pl'] if pos else 0
+            })
+            
             if pos:
                 self.position = 1 if pos['qty'] > 0 else -1
                 # Exit logic handled by Bracket Order (SL/TP)

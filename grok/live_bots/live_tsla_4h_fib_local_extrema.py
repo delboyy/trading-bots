@@ -17,6 +17,10 @@ import numpy as np
 from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 import schedule
 
+# Add project root to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from grok.utils.status_tracker import StatusTracker
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +39,10 @@ class TSLAFibLocalExtremaBot:
     """Live trading bot for TSLA 4h Fib Local Extrema strategy"""
 
     def __init__(self):
+        # Initialize Status Tracker
+        self.tracker = StatusTracker()
+        self.bot_id = "tsla_4h_le"
+        
         # Alpaca API credentials
         self.api_key = os.getenv('APCA_API_KEY_ID')
         self.api_secret = os.getenv('APCA_API_SECRET_KEY')
@@ -185,6 +193,16 @@ class TSLAFibLocalExtremaBot:
             if not account: return
             
             pos = self.get_position()
+            
+            # Update Status Dashboard
+            self.tracker.update_status(self.bot_id, {
+                'equity': account['equity'],
+                'cash': account['cash'],
+                'position': pos['qty'] if pos else 0,
+                'entry_price': pos['entry'] if pos else 0,
+                'unrealized_pl': pos['pl'] if pos else 0
+            })
+            
             if pos:
                 self.position = 1 if pos['qty'] > 0 else -1
                 return

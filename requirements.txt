@@ -4,3 +4,4 @@ numpy
 schedule
 yfinance
 mplfinance
+streamlit
