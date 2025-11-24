@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 
-from backtesting.fib_gold_backtest import backtest_fib_strategy, print_full_report
+from backtesting.strategies.fib_gold_backtest import backtest_fib_strategy, print_full_report
 
 
 def run_strategy_v1():

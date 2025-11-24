@@ -42,7 +42,10 @@ class LiveBotController:
             'nq_4h': 'live_nq_4h_volatility_breakout.py',
             'btc_1h': 'live_btc_1h_volatility_breakout.py',
             'meta_1h': 'live_meta_1h_volatility_breakout.py',
-            'xlk_1h': 'live_xlk_1h_volatility_breakout.py'
+            'xlk_1h': 'live_xlk_1h_volatility_breakout.py',
+            'eth_5m': 'live_eth_5m_fib_zigzag.py',
+            'btc_5m': 'live_btc_5m_fib_zigzag.py',
+            'tsla_4h_le': 'live_tsla_4h_fib_local_extrema.py'
         }
 
         self.bot_info = {
@@ -55,7 +58,10 @@ class LiveBotController:
             'nq_4h': {'name': 'NQ 4h Volatility Breakout', 'description': 'Futures winner - 33% returns'},
             'btc_1h': {'name': 'BTC 1h Volatility Breakout', 'description': 'Crypto steady - 45% returns'},
             'meta_1h': {'name': 'META 1h Volatility Breakout', 'description': 'Social media - 29% returns'},
-            'xlk_1h': {'name': 'XLK 1h Volatility Breakout', 'description': 'Tech sector - 24% returns'}
+            'xlk_1h': {'name': 'XLK 1h Volatility Breakout', 'description': 'Tech sector - 24% returns'},
+            'eth_5m': {'name': 'ETH 5m Fib Zigzag', 'description': 'Scalper - 91% Win Rate'},
+            'btc_5m': {'name': 'BTC 5m Fib Zigzag', 'description': 'Scalper - 85% Win Rate'},
+            'tsla_4h_le': {'name': 'TSLA 4h Fib Local Extrema', 'description': 'Swing - 100% Win Rate'}
         }
 
     def check_environment(self) -> bool:

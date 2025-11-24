@@ -65,6 +65,27 @@ Launch **8 Parallel Bots** to validate the winning strategies from our massive s
     *   **Strategy**: Mean Reversion (`window=20`, `z=2.0`)
     *   **Logic**: Quick mean reversion scalps.
 
+### Group E: The "Originals" (Verified Scalpers & Swings)
+*Strategies confirmed by recent stress test (Last 60d).*
+
+9.  **ETH Scalper (5m)**
+    *   **Symbol**: `ETH-USD`
+    *   **Timeframe**: `5m`
+    *   **Strategy**: Fib Zigzag (`dev=2%`)
+    *   **Expected Win Rate**: >90% (Recent)
+
+10. **BTC Scalper (5m)**
+    *   **Symbol**: `BTC-USD`
+    *   **Timeframe**: `5m`
+    *   **Strategy**: Fib Zigzag (`dev=2%`)
+    *   **Expected Win Rate**: >85% (Recent)
+
+11. **TSLA Swing (4h)**
+    *   **Symbol**: `TSLA`
+    *   **Timeframe**: `4h`
+    *   **Strategy**: Fib Local Extrema (`window=5`)
+    *   **Expected Return**: >18% (Recent)
+
 ## 🛠️ Setup Instructions
 1.  **Capital Allocation**: Allocate $10,000 virtual capital per bot ($80,000 total).
 2.  **Risk Management**:

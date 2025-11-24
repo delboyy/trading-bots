@@ -4,7 +4,7 @@ import os
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backtesting.fib_gold_backtest import backtest_fib_strategy, print_full_report
+from backtesting.strategies.fib_gold_backtest import backtest_fib_strategy, print_full_report
 
 def run():
     print("Running 1h Backtest...")
