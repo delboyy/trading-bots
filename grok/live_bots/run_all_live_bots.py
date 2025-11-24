@@ -32,6 +32,10 @@ class LiveBotController:
 
     def __init__(self):
         self.bot_processes: Dict[str, subprocess.Popen] = {}
+
+        # Get the directory where this script is located
+        self.bot_dir = Path(__file__).resolve().parent
+
         self.bot_scripts = {
             'eth_1h': 'live_eth_1h_volatility_breakout.py',
             'slv_4h': 'live_slv_4h_mean_reversion.py',
@@ -102,8 +106,8 @@ class LiveBotController:
             logger.warning(f"Bot {bot_key} is already running")
             return False
 
-        script_path = self.bot_scripts[bot_key]
-        if not os.path.exists(script_path):
+        script_path = self.bot_dir / self.bot_scripts[bot_key]
+        if not script_path.exists():
             logger.error(f"Script not found: {script_path}")
             return False
 
