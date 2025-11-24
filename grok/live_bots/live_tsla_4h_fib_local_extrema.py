@@ -9,6 +9,7 @@ Paper Trading Account Required
 import os
 import sys
 import time
+import signal
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List, Tuple
@@ -34,6 +35,23 @@ logger = logging.getLogger('TSLA_4H_FIB_LE')
 
 # Create logs directory
 os.makedirs('logs', exist_ok=True)
+
+# Global stop flag
+stop_flag = False
+
+def signal_handler(signum, frame):
+    """Handle stop signals gracefully"""
+    global stop_flag
+    stop_flag = True
+    logger.info(f"Received signal {signum}, stopping bot gracefully...")
+    # Give a moment for cleanup
+    time.sleep(2)
+    logger.info("Bot stopped successfully")
+    sys.exit(0)
+
+# Register signal handlers
+signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+signal.signal(signal.SIGTERM, signal_handler)  # kill command
 
 class TSLAFibLocalExtremaBot:
     """Live trading bot for TSLA 4h Fib Local Extrema strategy"""
@@ -227,15 +245,26 @@ class TSLAFibLocalExtremaBot:
             logger.error(f"Error in strategy: {e}")
 
     def run_live(self):
+        global stop_flag
         logger.info("Starting TSLA 4h Fib Local Extrema Bot...")
         schedule.every(15).minutes.do(self.run_strategy) # Check every 15m
-        while True:
-            try:
-                schedule.run_pending()
-                time.sleep(10)
-            except Exception as e:
-                logger.error(f"Loop error: {e}")
-                time.sleep(60)
+
+        try:
+            while not stop_flag:
+                try:
+                    schedule.run_pending()
+                    time.sleep(10)
+                except Exception as e:
+                    logger.error(f"Loop error: {e}")
+                    time.sleep(60)
+        except KeyboardInterrupt:
+            logger.info("Bot stopped by user (Ctrl+C)")
+        except Exception as e:
+            logger.error(f"Bot crashed with error: {e}")
+        finally:
+            logger.info("Bot shutdown complete - cleaning up...")
+            # Add any cleanup logic here if needed
+            logger.info("TSLA 4h Fib Local Extrema Bot stopped")
 
 if __name__ == "__main__":
     TSLAFibLocalExtremaBot().run_live()

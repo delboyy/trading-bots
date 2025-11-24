@@ -9,6 +9,7 @@ Paper Trading Account Required
 import os
 import sys
 import time
+import signal
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
@@ -34,6 +35,23 @@ logger = logging.getLogger('GLD_4H_MEAN_REVERSION')
 
 # Create logs directory
 os.makedirs('logs', exist_ok=True)
+
+# Global stop flag
+stop_flag = False
+
+def signal_handler(signum, frame):
+    """Handle stop signals gracefully"""
+    global stop_flag
+    stop_flag = True
+    logger.info(f"Received signal {signum}, stopping bot gracefully...")
+    # Give a moment for cleanup
+    time.sleep(2)
+    logger.info("Bot stopped successfully")
+    sys.exit(0)
+
+# Register signal handlers
+signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+signal.signal(signal.SIGTERM, signal_handler)  # kill command
 
 class GLDMeanReversionBot:
     """Live trading bot for GLD 4h Mean Reversion strategy"""
@@ -306,16 +324,21 @@ class GLDMeanReversionBot:
         job()
 
         # Keep running
-        while True:
-            try:
-                schedule.run_pending()
-                time.sleep(60)
-            except KeyboardInterrupt:
-                logger.info("Bot stopped by user")
-                break
-            except Exception as e:
-                logger.error(f"Error in main loop: {e}")
-                time.sleep(300)
+        try:
+            while not stop_flag:
+                try:
+                    schedule.run_pending()
+                    time.sleep(60)
+                except Exception as e:
+                    logger.error(f"Error in main loop: {e}")
+                    time.sleep(300)
+        except KeyboardInterrupt:
+            logger.info("Bot stopped by user (Ctrl+C)")
+        except Exception as e:
+            logger.error(f"Bot crashed with error: {e}")
+        finally:
+            logger.info("Bot shutdown complete - cleaning up...")
+            logger.info("GLD 4h Mean Reversion Bot stopped")
 
 
 def main():

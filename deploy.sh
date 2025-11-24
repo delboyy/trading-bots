@@ -189,19 +189,53 @@ echo ""
 
 # Check running processes
 echo "Running bots:"
-ps aux | grep "live_.*\.py" | grep -v grep || echo "No bots running"
+RUNNING_BOTS=$(ps aux | grep "live_.*\.py" | grep -v grep)
+if [ -z "$RUNNING_BOTS" ]; then
+    echo "❌ No bots currently running"
+else
+    echo "$RUNNING_BOTS"
+fi
 
 echo ""
-echo "Recent log activity:"
-tail -20 logs/*.log 2>/dev/null || echo "No logs found"
+echo "Bot Stop Events (last 50 lines):"
+echo "=================================="
+tail -50 logs/*.log 2>/dev/null | grep -i "stop\|crash\|error\|exit\|signal" | tail -10 || echo "No recent stop events found"
 
 echo ""
+echo "Recent log activity (last 10 lines):"
+echo "===================================="
+tail -10 logs/*.log 2>/dev/null || echo "No logs found"
+
+echo ""
+echo "System Resources:"
+echo "================="
 echo "Disk usage:"
 df -h | grep -E "(Filesystem|/$)"
-
 echo ""
 echo "Memory usage:"
 free -h
+
+echo ""
+echo "Bot Health Check:"
+echo "================="
+# Check if any bots have stopped recently
+if [ -d "logs" ]; then
+    echo "Checking for bot stop messages..."
+    STOP_COUNT=$(grep -r "stopped\|crashed\|Bot stopped" logs/ 2>/dev/null | wc -l)
+    ERROR_COUNT=$(grep -r "ERROR\|CRITICAL" logs/ 2>/dev/null | wc -l)
+
+    if [ "$STOP_COUNT" -gt 0 ]; then
+        echo "⚠️  $STOP_COUNT bot stop events detected"
+    fi
+
+    if [ "$ERROR_COUNT" -gt 0 ]; then
+        echo "🚨 $ERROR_COUNT error messages found"
+    fi
+
+    if [ "$STOP_COUNT" -eq 0 ] && [ "$ERROR_COUNT" -eq 0 ]; then
+        echo "✅ No recent stops or errors"
+    fi
+fi
 EOF
 
 chmod +x monitor_bots.sh

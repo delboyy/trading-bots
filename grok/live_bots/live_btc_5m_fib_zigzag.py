@@ -9,6 +9,7 @@ Paper Trading Account Required
 import os
 import sys
 import time
+import signal
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List, Tuple
@@ -34,6 +35,23 @@ logger = logging.getLogger('BTC_5M_FIB_ZIGZAG')
 
 # Create logs directory
 os.makedirs('logs', exist_ok=True)
+
+# Global stop flag
+stop_flag = False
+
+def signal_handler(signum, frame):
+    """Handle stop signals gracefully"""
+    global stop_flag
+    stop_flag = True
+    logger.info(f"Received signal {signum}, stopping bot gracefully...")
+    # Give a moment for cleanup
+    time.sleep(2)
+    logger.info("Bot stopped successfully")
+    sys.exit(0)
+
+# Register signal handlers
+signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+signal.signal(signal.SIGTERM, signal_handler)  # kill command
 
 class BTCFibZigzagBot:
     """Live trading bot for BTC 5m Fib Zigzag strategy"""
@@ -264,15 +282,26 @@ class BTCFibZigzagBot:
             logger.error(f"Error in strategy: {e}")
 
     def run_live(self):
+        global stop_flag
         logger.info("Starting BTC 5m Fib Zigzag Bot...")
         schedule.every(1).minutes.do(self.run_strategy)
-        while True:
-            try:
-                schedule.run_pending()
-                time.sleep(10)
-            except Exception as e:
-                logger.error(f"Loop error: {e}")
-                time.sleep(60)
+
+        try:
+            while not stop_flag:
+                try:
+                    schedule.run_pending()
+                    time.sleep(10)
+                except Exception as e:
+                    logger.error(f"Loop error: {e}")
+                    time.sleep(60)
+        except KeyboardInterrupt:
+            logger.info("Bot stopped by user (Ctrl+C)")
+        except Exception as e:
+            logger.error(f"Bot crashed with error: {e}")
+        finally:
+            logger.info("Bot shutdown complete - cleaning up...")
+            # Add any cleanup logic here if needed
+            logger.info("BTC 5m Fib Zigzag Bot stopped")
 
 if __name__ == "__main__":
     BTCFibZigzagBot().run_live()
