@@ -273,7 +273,6 @@ class ETHVolatilityBreakoutBot:
 
             # Get current position
             if current_position:
-            if current_position:
                 self.position = 1 if current_position['qty'] > 0 else -1
                 self.entry_price = current_position['avg_entry_price']
 

@@ -266,7 +266,6 @@ class GLDMeanReversionBot:
 
             # Get current position
             if current_position:
-            if current_position:
                 self.position = 1 if current_position['qty'] > 0 else -1
                 self.entry_price = current_position['avg_entry_price']
 
@@ -304,7 +303,8 @@ class GLDMeanReversionBot:
                         self.position = signal
                         self.entry_price = current_price
                         z_score = df['z_score'].iloc[-1]
-                        logger.info(".2f"
+                        logger.info(f"Entered {side} position at {current_price} (Z-score: {z_score:.2f})")
+            
             logger.info(f"Strategy check complete - Position: {self.position}, Equity: ${current_equity:.2f}")
 
         except Exception as e:
@@ -324,8 +324,7 @@ class GLDMeanReversionBot:
         job()
 
         # Keep running
-        try:
-            while not stop_flag:
+        while not stop_flag:
             try:
                 schedule.run_pending()
                 time.sleep(60)
