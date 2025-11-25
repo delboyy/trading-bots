@@ -254,7 +254,8 @@ class GOOGLRSIScalpingBot:
             daily_drawdown = (self.daily_start_equity - current_equity) / self.daily_start_equity
 
             if daily_drawdown >= self.max_daily_drawdown:
-                logger.warning(".2f"                return True
+                logger.warning(f"Daily drawdown limit reached: {daily_drawdown:.2%}")
+                return True
 
             return False
 
@@ -355,7 +356,7 @@ class GOOGLRSIScalpingBot:
             logger.info(f"Total Trades: {self.total_trades}")
             logger.info(f"Current Equity: ${current_equity:.2f}")
             logger.info(f"Daily P&L: ${self.daily_pnl:.2f}")
-            logger.info(".2f"            logger.info("=" * 60)
+            logger.info(f"Daily P&L: ${self.daily_pnl:.2f}")
 
         except Exception as e:
             logger.error(f"Error printing performance summary: {e}")

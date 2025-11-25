@@ -170,7 +170,7 @@ class BTCFibZigzagBot:
             sl_price = last_low['price']
             
             if current_close > breakout_level:
-                 signal = {
+                signal = {
                     "type": "LONG",
                     "entry": current_close,
                     "sl": sl_price,

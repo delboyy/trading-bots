@@ -389,7 +389,8 @@ class GLDMeanReversionMarginBot:
                         self.position = signal
                         self.entry_price = current_price
                         z_score = df['z_score'].iloc[-1]
-                        logger.warning(".2f"                        logger.warning(f"🔥 LEVERAGE WARNING: {self.leverage}x leverage active!")
+                        logger.warning(f"Leverage limit reached: {self.leverage:.2f}x")
+                        logger.warning(f"🔥 LEVERAGE WARNING: {self.leverage}x leverage active!")
                         logger.warning(f"🔥 Effective exposure: ${(qty * current_price):.2f}")
                         logger.warning("🔥 Monitor closely - margin calls happen fast!")
             else:
