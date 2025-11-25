@@ -80,7 +80,8 @@ else:
             "PnL (%)": (pnl / start_equity) * 100 if start_equity else 0,
             "Position": "LONG" if pos > 0 else "SHORT" if pos < 0 else "FLAT",
             "Entry Price": info.get('entry_price', 0),
-            "Last Update": last_updated.strftime("%H:%M:%S")
+            "Last Update": last_updated.strftime("%H:%M:%S"),
+            "Error": info.get('error')
         })
         
     # --- Top Metrics Row ---
@@ -108,8 +109,21 @@ else:
             lambda x: 'color: green' if x > 0 else 'color: red' if x < 0 else 'color: gray', subset=['PnL ($)', 'PnL (%)']
         ),
         use_container_width=True,
-        height=500
+        height=400
     )
+
+    # --- Errors Tab ---
+    st.subheader("⚠️ System Health & Errors")
+    error_bots = [b for b in bot_rows if b.get('Error')]
+    
+    if error_bots:
+        st.error(f"Detected {len(error_bots)} bots with errors!")
+        for bot in error_bots:
+            with st.expander(f"🚨 {bot['Bot Name']} Error", expanded=True):
+                st.write(f"**Time:** {bot['Last Update']}")
+                st.code(bot['Error'])
+    else:
+        st.success("✅ All systems operational. No active errors.")
     
     # --- Log Viewer (Optional) ---
     st.subheader("Recent Logs")

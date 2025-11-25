@@ -312,7 +312,7 @@ class TSLAVolatilityBreakoutBot:
 
 def main():
     try:
-        bot = TSLA4HVolatilityBreakoutBot()
+        bot = TSLAVolatilityBreakoutBot()
         bot.run_live()
     except Exception as e:
         logger.critical(f"Critical error: {e}")

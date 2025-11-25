@@ -312,7 +312,7 @@ class ETHVolatilityBreakoutBot:
 
 def main():
     try:
-        bot = ETH4HVolatilityBreakoutBot()
+        bot = ETHVolatilityBreakoutBot()
         bot.run_live()
     except Exception as e:
         logger.critical(f"Critical error: {e}")

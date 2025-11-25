@@ -33,9 +33,19 @@ def apply_indicators(df):
     """Apply Bollinger Bands and Keltner Channels for Squeeze"""
     # Bollinger Bands (20, 2)
     bb = ta.bbands(df['close'], length=20, std=2)
+    print(f"BB Columns: {bb.columns.tolist()}")
     df = pd.concat([df, bb], axis=1)
     # Rename: BBL_20_2.0 -> lower, BBM_20_2.0 -> middle, BBU_20_2.0 -> upper, BBB_20_2.0 -> bandwidth
-    df.rename(columns={'BBL_20_2.0': 'bb_lower', 'BBM_20_2.0': 'bb_middle', 'BBU_20_2.0': 'bb_upper', 'BBB_20_2.0': 'bb_width'}, inplace=True)
+    # Dynamic renaming based on actual columns
+    cols = bb.columns.tolist()
+    rename_map = {
+        cols[0]: 'bb_lower', 
+        cols[1]: 'bb_middle', 
+        cols[2]: 'bb_upper', 
+        cols[3]: 'bb_width',
+        cols[4]: 'bb_pct' # Usually the 5th column is %B
+    }
+    df.rename(columns=rename_map, inplace=True)
     
     # Keltner Channels (20, 1.5) - Squeeze is often defined as BB inside KC
     # But simpler definition: Bandwidth < Threshold (e.g., 1% for stocks, 0.5% for crypto?)
@@ -57,10 +67,11 @@ def backtest_squeeze_pro(df, symbol, initial_capital=10000):
     df = apply_indicators(df)
     df.dropna(inplace=True)
     
-    position = 0
-    entry_price = 0
-    stop_loss = 0
+    position = 0 # 0: Flat, 1: Long, -1: Short
+    entry_price = 0.0
+    stop_loss = 0.0
     equity = initial_capital
+    equity_curve = [initial_capital]
     trades = []
     
     risk_per_trade = 0.01
@@ -128,13 +139,27 @@ def backtest_squeeze_pro(df, symbol, initial_capital=10000):
                 stop_loss = current['bb_middle']
                 position = -1
                 in_squeeze = False
+        
+        equity_curve.append(equity)
+
+    # Calculate performance metrics
+    equity_series = pd.Series(equity_curve)
+    strategy_returns = equity_series.pct_change().fillna(0)
+    cumulative_returns = (1 + strategy_returns).cumprod()
+    peak = cumulative_returns.cummax()
+    drawdown = (cumulative_returns - peak) / peak
+    max_drawdown = drawdown.min() * 100 if not drawdown.empty else 0
+
+    total_return = (equity - initial_capital) / initial_capital
+    win_rate = len([t for t in trades if t['pnl'] > 0]) / len(trades) if trades else 0
 
     return {
         'symbol': symbol,
         'final_equity': equity,
-        'return': (equity - initial_capital) / initial_capital * 100,
+        'return': total_return * 100,
         'trades': len(trades),
-        'win_rate': len([t for t in trades if t['pnl'] > 0]) / len(trades) * 100 if trades else 0
+        'win_rate': win_rate * 100,
+        'max_drawdown': max_drawdown
     }
 
 def main():
@@ -142,17 +167,17 @@ def main():
     
     print("=== Backtesting Squeeze-Pro Strategy (5m) ===")
     for symbol in assets:
-        df = download_data(symbol, period='5d', interval='5m')
+        df = download_data(symbol, period='60d', interval='5m')
         res = backtest_squeeze_pro(df, symbol)
         if res:
-            print(f"{symbol}: Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%")
+            print(f"{symbol}: Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%, MaxDD={res['max_drawdown']:.2f}%")
             
     print("\n=== Backtesting Squeeze-Pro Strategy (15m) ===")
     for symbol in assets:
-        df = download_data(symbol, period='1mo', interval='15m')
+        df = download_data(symbol, period='60d', interval='15m')
         res = backtest_squeeze_pro(df, symbol)
         if res:
-            print(f"{symbol} (15m): Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%")
+            print(f"{symbol} (15m): Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%, MaxDD={res['max_drawdown']:.2f}%")
 
 if __name__ == "__main__":
     main()

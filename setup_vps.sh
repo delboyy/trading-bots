@@ -18,6 +18,13 @@ pip install -r requirements.txt
 # 5. Create Logs Directory
 mkdir -p logs
 
+# 6. Cleanup Unnecessary Files (Save Space)
+echo "🧹 Cleaning up backtesting and data files..."
+rm -rf backtesting
+rm -rf data
+rm -rf tests
+rm -rf .git  # Optional: Remove git history to save space if not developing on VPS
+
 echo "✅ Setup Complete!"
 echo "To activate environment: source venv/bin/activate"
 echo "To run bots: python grok/live_bots/run_all_live_bots.py"

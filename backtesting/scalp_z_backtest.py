@@ -56,12 +56,14 @@ def backtest_scalp_z(df, symbol, initial_capital=10000):
     df = apply_indicators(df)
     df.dropna(inplace=True)
     
-    position = 0
-    entry_price = 0
-    stop_loss = 0
-    take_profit = 0
     equity = initial_capital
+    equity_curve = [initial_capital]
     trades = []
+    
+    position = 0 # 0: Flat, 1: Long, -1: Short
+    entry_price = 0.0
+    stop_loss = 0.0
+    take_profit = 0
     
     # Risk Management
     risk_per_trade = 0.01 # 1% risk
@@ -139,13 +141,31 @@ def backtest_scalp_z(df, symbol, initial_capital=10000):
                 stop_loss = sl_price
                 take_profit = entry_price - (risk * 1.5)
                 position = -1
+        
+        equity_curve.append(equity) # Append equity at each step
+
+    # Calculate performance metrics
+    total_return = (equity - initial_capital) / initial_capital
+    win_rate = len([t for t in trades if t['pnl'] > 0]) / len(trades) if trades else 0
+
+    # Calculate Max Drawdown
+    equity_series = pd.Series(equity_curve)
+    if len(equity_series) > 1:
+        returns = equity_series.pct_change().dropna()
+        cumulative_returns = (1 + returns).cumprod()
+        peak = cumulative_returns.cummax()
+        drawdown = (cumulative_returns - peak) / peak
+        max_drawdown = drawdown.min() * 100
+    else:
+        max_drawdown = 0.0 # No trades or only initial capital
 
     return {
         'symbol': symbol,
         'final_equity': equity,
-        'return': (equity - initial_capital) / initial_capital * 100,
+        'return': total_return * 100,
         'trades': len(trades),
-        'win_rate': len([t for t in trades if t['pnl'] > 0]) / len(trades) * 100 if trades else 0
+        'win_rate': win_rate * 100,
+        'max_drawdown': max_drawdown
     }
 
 def main():
@@ -154,18 +174,18 @@ def main():
     
     print("=== Backtesting Scalp-Z Strategy (5m) ===")
     for symbol in assets:
-        df = download_data(symbol, period='5d', interval='5m') # 5 days of 5m data
+        df = download_data(symbol, period='60d', interval='5m') # 60 days of 5m data
         res = backtest_scalp_z(df, symbol)
         if res:
             results.append(res)
-            print(f"{symbol}: Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%")
+            print(f"{symbol}: Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%, MaxDD={res['max_drawdown']:.2f}%")
             
     print("\n=== Backtesting Scalp-Z Strategy (15m) ===")
     for symbol in assets:
-        df = download_data(symbol, period='1mo', interval='15m') # 1 month of 15m data
+        df = download_data(symbol, period='60d', interval='15m') # 60 days of 15m data
         res = backtest_scalp_z(df, symbol)
         if res:
-            print(f"{symbol} (15m): Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%")
+            print(f"{symbol} (15m): Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%, MaxDD={res['max_drawdown']:.2f}%")
 
 if __name__ == "__main__":
     main()

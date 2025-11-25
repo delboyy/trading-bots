@@ -136,14 +136,14 @@ def main():
     
     print("=== Backtesting Momentum-X Strategy (15m) ===")
     for symbol in assets:
-        df = download_data(symbol, period='1mo', interval='15m')
+        df = download_data(symbol, period='60d', interval='15m')
         res = backtest_momentum_x(df, symbol)
         if res:
             print(f"{symbol}: Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%")
             
     print("\n=== Backtesting Momentum-X Strategy (30m) ===")
     for symbol in assets:
-        df = download_data(symbol, period='1mo', interval='30m')
+        df = download_data(symbol, period='60d', interval='30m')
         res = backtest_momentum_x(df, symbol)
         if res:
             print(f"{symbol} (30m): Return={res['return']:.2f}%, Trades={res['trades']}, WinRate={res['win_rate']:.1f}%")

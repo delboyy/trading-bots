@@ -13,6 +13,12 @@ class StatusTracker:
     def __init__(self, status_file: str = "dashboard/bot_status.json"):
         self.status_file = status_file
         self.ensure_file_exists()
+        
+        # Rate Limit Protection: Random startup jitter (1-20s)
+        # This prevents "Thundering Herd" when all bots start at once
+        import random
+        jitter = random.uniform(1.0, 20.0)
+        time.sleep(jitter)
 
     def ensure_file_exists(self):
         """Create the status file if it doesn't exist"""

@@ -53,7 +53,16 @@ class LiveBotController:
             'eth_1d': 'live_eth_1d_volatility_breakout.py',
             'tsla_1d': 'live_tsla_1d_volatility_breakout.py',
             'nvda_1d': 'live_nvda_1d_volatility_breakout.py',
-            'spy_1d': 'live_spy_1d_volatility_breakout.py'
+            'spy_1d': 'live_spy_1d_volatility_breakout.py',
+            'nvda_5m_squeeze': 'live_nvda_5m_squeeze_pro.py',
+            'btc_15m_squeeze': 'live_btc_15m_squeeze_pro.py',
+            'btc_5m_scalp_z': 'live_btc_5m_scalp_z.py',
+            'nvda_15m_squeeze': 'live_nvda_15m_squeeze_pro.py',
+            'amd_5m_vol': 'live_amd_5m_volume_breakout.py',
+            'googl_15m_rsi': 'live_googl_15m_rsi_scalping.py',
+            'msft_5m_rsi': 'live_msft_5m_rsi_scalping.py',
+            'msft_5m_winner': 'live_msft_5m_rsi_winner.py',
+            'tsla_15m_time': 'live_tsla_15m_time_based_scalping.py'
         }
 
         self.bot_info = {
@@ -73,7 +82,16 @@ class LiveBotController:
             'eth_1d': {'name': 'ETH 1d Volatility Breakout', 'description': 'Daily Swing - 154% Return'},
             'tsla_1d': {'name': 'TSLA 1d Volatility Breakout', 'description': 'Daily Swing - 144% Return'},
             'nvda_1d': {'name': 'NVDA 1d Volatility Breakout', 'description': 'Daily Swing - 143% Return'},
-            'spy_1d': {'name': 'SPY 1d Volatility Breakout', 'description': 'Daily Swing - 75% Win Rate'}
+            'spy_1d': {'name': 'SPY 1d Volatility Breakout', 'description': 'Daily Swing - 75% Win Rate'},
+            'nvda_5m_squeeze': {'name': 'NVDA 5m Squeeze-Pro', 'description': 'Scalper - 82% Return, 7.9% DD'},
+            'btc_15m_squeeze': {'name': 'BTC 15m Squeeze-Pro', 'description': 'Scalper - 30% Return, 8% DD'},
+            'btc_5m_scalp_z': {'name': 'BTC 5m Scalp-Z', 'description': 'Scalper - 66% Return, 13.5% DD'},
+            'nvda_15m_squeeze': {'name': 'NVDA 15m Squeeze-Pro', 'description': 'Scalper - 25% Return, 3.8% DD'},
+            'amd_5m_vol': {'name': 'AMD 5m Volume Breakout', 'description': 'Scalper - 13.75% Return, 66.7% Win Rate'},
+            'googl_15m_rsi': {'name': 'GOOGL 15m RSI Scalping', 'description': 'Scalper - 41.3% Return, 54% Win Rate'},
+            'msft_5m_rsi': {'name': 'MSFT 5m RSI Scalping', 'description': 'Scalper - 4% Return, 53.7% Win Rate'},
+            'msft_5m_winner': {'name': 'MSFT 5m RSI Winner', 'description': 'Scalper - Validated Winner Strategy'},
+            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'}
         }
 
     def check_environment(self) -> bool:

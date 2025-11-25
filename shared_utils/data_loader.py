@@ -28,8 +28,8 @@ def load_ohlcv_ibkr(
     what_to_show: str = "MIDPOINT",
     use_rth: bool = False,
     host: str = "127.0.0.1",
-    port: int = 7497,
-    client_id: int = 1,
+    port: int = 7496,
+    client_id: int | None = None,
     contract_kwargs: dict | None = None,
 ) -> pd.DataFrame:
     """
@@ -40,7 +40,10 @@ def load_ohlcv_ibkr(
         contract_kwargs = {}
 
     ib = IB()
-    ib.connect(host, port, clientId=client_id, readonly=True, timeout=10)
+    if client_id is not None:
+        ib.connect(host, port, clientId=client_id, readonly=True, timeout=10)
+    else:
+        ib.connect(host, port, readonly=True, timeout=10)
 
     if contract_kind == "forex":
         contract = Forex(symbol, **contract_kwargs)

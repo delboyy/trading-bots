@@ -72,7 +72,7 @@ class ETHFibZigzagBot:
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
         # Strategy parameters
-        self.symbol = 'ETHUSD'
+        self.symbol = 'ETH/USD'
         self.timeframe = TimeFrame(5, TimeFrameUnit.Minute)
         self.zigzag_dev = 0.02 # 2% deviation
         self.fib_level = 0.618

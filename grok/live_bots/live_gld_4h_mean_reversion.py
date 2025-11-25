@@ -326,12 +326,12 @@ class GLDMeanReversionBot:
         # Keep running
         try:
             while not stop_flag:
-                try:
-                    schedule.run_pending()
-                    time.sleep(60)
-                except Exception as e:
-                    logger.error(f"Error in main loop: {e}")
-                    time.sleep(300)
+            try:
+                schedule.run_pending()
+                time.sleep(60)
+            except Exception as e:
+                logger.error(f"Error in main loop: {e}")
+                time.sleep(300)
         except KeyboardInterrupt:
             logger.info("Bot stopped by user (Ctrl+C)")
         except Exception as e:

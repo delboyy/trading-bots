@@ -10,7 +10,51 @@ This guide details how to deploy the Grok Trading Bot System to a VPS (Virtual P
 
 ---
 
-## 🛠️ Step 1: Initial VPS Setup
+## � Fresh Re-Install (Resetting Everything)
+
+If you need to wipe the slate clean and start over (e.g., to pull the latest code updates), follow these steps:
+
+1.  **Navigate to Home Directory**:
+    ```bash
+    cd ~
+    ```
+
+2.  **Remove Existing Directory**:
+    ```bash
+    rm -rf trading-bots
+    ```
+
+3.  **Clone the Repository Again**:
+    ```bash
+    git clone https://github.com/yourusername/trading-bots.git
+    cd trading-bots
+    ```
+
+4.  **Run Setup Script**:
+    ```bash
+    bash setup_vps.sh
+    ```
+
+5.  **Activate Environment**:
+    ```bash
+    source venv/bin/activate
+    ```
+
+6.  **Re-Export Keys** (if not in `.bashrc`):
+    ```bash
+    export APCA_API_KEY_ID='YOUR_KEY'
+    export APCA_API_SECRET_KEY='YOUR_SECRET'
+    export APCA_API_BASE_URL='https://paper-api.alpaca.markets'
+    ```
+
+7.  **Start Bots**:
+    ```bash
+    python grok/live_bots/run_all_live_bots.py
+    ```
+
+---
+
+## �🛠️ Step 1: Initial VPS Setup
 
 1.  **Connect to your VPS** via SSH:
     ```bash
@@ -81,7 +125,7 @@ export APCA_API_BASE_URL='https://paper-api.alpaca.markets'
 
 ## 🤖 Step 3: Start the Trading Bots
 
-We have a master controller script that manages all 17 bots.
+We have a master controller script that manages all active bots.
 
 1.  **Activate Virtual Environment** (if not already):
     ```bash
@@ -118,7 +162,7 @@ The real-time dashboard allows you to monitor all bots from your browser.
 
 ## 📝 Bot Portfolio Overview
 
-Your system is running **17 Live Bots** covering Crypto, Stocks, Commodities, and Indices:
+Your system is running **26 Live Bots** covering Crypto, Stocks, Commodities, and Indices:
 
 ### 🏆 The Champions (High Return)
 - **ETH 1h Volatility Breakout**: 181% Return
@@ -136,12 +180,20 @@ Your system is running **17 Live Bots** covering Crypto, Stocks, Commodities, an
 ### ⚡ The Scalpers (High Frequency)
 - **ETH 5m Fib Zigzag**: 91% Win Rate
 - **BTC 5m Fib Zigzag**: 85% Win Rate
+- **NVDA 5m Squeeze-Pro**: 82% Return
+- **BTC 5m Scalp-Z**: 66% Return
+- **GOOGL 15m RSI Scalping**: 41% Return
+- **TSLA 15m Time Scalping**: 36% Return
+- **BTC 15m Squeeze-Pro**: 30% Return
+- **NVDA 15m Squeeze-Pro**: 25% Return
+- **AMD 5m Volume Breakout**: 13% Return
+- **MSFT 5m RSI Scalping**: 4% Return
+- **MSFT 5m RSI Winner**: Validated Winner
 
 ### 🌍 Diversification
 - **BTC 1h/4h**: Crypto Stability
 - **NQ 4h**: Futures
 - **XLK 1h**: Tech Sector
-- **META 1h**: Social Media
 - **NVDA 1h**: Tech Momentum
 
 ---
