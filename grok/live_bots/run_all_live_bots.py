@@ -131,20 +131,45 @@ class LiveBotController:
             return False
 
         try:
-            # Start the bot process
+            # Create bot-specific log file for errors
+            bot_log_file = f"logs/{bot_key}_error.log"
+            
+            # Start the bot process with error logging
             process = subprocess.Popen(
                 [sys.executable, str(script_path)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=os.getcwd()
+                cwd=os.getcwd(),
+                text=True,
+                bufsize=1
             )
 
             self.bot_processes[bot_key] = process
             logger.info(f"Started bot: {self.bot_info[bot_key]['name']}")
+            
+            # Start a thread to capture and log stderr
+            def log_stderr():
+                try:
+                    with open(bot_log_file, 'a') as f:
+                        for line in process.stderr:
+                            error_msg = line.strip()
+                            if error_msg:
+                                logger.error(f"Bot {bot_key} ERROR: {error_msg}")
+                                f.write(f"{error_msg}\n")
+                                f.flush()
+                except Exception as e:
+                    logger.error(f"Error logging stderr for {bot_key}: {e}")
+            
+            import threading
+            stderr_thread = threading.Thread(target=log_stderr, daemon=True)
+            stderr_thread.start()
+            
             return True
 
         except Exception as e:
             logger.error(f"Failed to start bot {bot_key}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return False
 
     def stop_bot(self, bot_key: str) -> bool:

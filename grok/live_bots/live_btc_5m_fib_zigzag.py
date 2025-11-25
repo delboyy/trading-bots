@@ -286,22 +286,19 @@ class BTCFibZigzagBot:
         logger.info("Starting BTC 5m Fib Zigzag Bot...")
         schedule.every(1).minutes.do(self.run_strategy)
 
-        try:
-            while not stop_flag:
+        while not stop_flag:
             try:
                 schedule.run_pending()
                 time.sleep(10)
+            except KeyboardInterrupt:
+                logger.info("Bot stopped by user (Ctrl+C)")
+                break
             except Exception as e:
                 logger.error(f"Loop error: {e}")
                 time.sleep(60)
-        except KeyboardInterrupt:
-            logger.info("Bot stopped by user (Ctrl+C)")
-        except Exception as e:
-            logger.error(f"Bot crashed with error: {e}")
-        finally:
-            logger.info("Bot shutdown complete - cleaning up...")
-            # Add any cleanup logic here if needed
-            logger.info("BTC 5m Fib Zigzag Bot stopped")
+        
+        logger.info("Bot shutdown complete - cleaning up...")
+        logger.info("BTC 5m Fib Zigzag Bot stopped")
 
 if __name__ == "__main__":
     BTCFibZigzagBot().run_live()

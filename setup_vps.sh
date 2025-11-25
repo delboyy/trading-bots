@@ -15,9 +15,8 @@ source venv/bin/activate
 # 4. Install Dependencies
 pip install -r requirements.txt
 
-# 5. Create Logs and Dashboard Directories
+# 5. Create Logs Directory
 mkdir -p logs
-mkdir -p dashboard
 
 # 6. Cleanup Unnecessary Files (Save Space)
 echo "🧹 Cleaning up backtesting and data files..."

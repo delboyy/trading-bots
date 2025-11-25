@@ -328,16 +328,15 @@ class GLDMeanReversionBot:
             try:
                 schedule.run_pending()
                 time.sleep(60)
+            except KeyboardInterrupt:
+                logger.info("Bot stopped by user (Ctrl+C)")
+                break
             except Exception as e:
                 logger.error(f"Error in main loop: {e}")
                 time.sleep(300)
-        except KeyboardInterrupt:
-            logger.info("Bot stopped by user (Ctrl+C)")
-        except Exception as e:
-            logger.error(f"Bot crashed with error: {e}")
-        finally:
-            logger.info("Bot shutdown complete - cleaning up...")
-            logger.info("GLD 4h Mean Reversion Bot stopped")
+        
+        logger.info("Bot shutdown complete - cleaning up...")
+        logger.info("GLD 4h Mean Reversion Bot stopped")
 
 
 def main():

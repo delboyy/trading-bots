@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import pandas as pd
 import numpy as np
-from alpaca_trade_api import REST, TimeFrame
+from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 import schedule
 
 # Add project root to path for imports
@@ -54,7 +54,7 @@ class ETHVolatilityBreakoutBot:
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
         self.symbol = 'ETHUSD'
-        self.timeframe = TimeFrame.Hour * 4
+        self.timeframe = TimeFrame(4, TimeFrameUnit.Hour)
         self.atr_window = 14
         self.k = 2.0
 

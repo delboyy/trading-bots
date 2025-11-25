@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
+import pandas as pd
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]
