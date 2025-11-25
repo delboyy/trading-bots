@@ -127,10 +127,11 @@ export APCA_API_BASE_URL='https://paper-api.alpaca.markets'
 
 We have a master controller script that manages all active bots.
 
-1.  **Activate Virtual Environment** (if not already):
+1.  **Activate Virtual Environment** (CRITICAL):
     ```bash
     source venv/bin/activate
     ```
+    *If you don't do this, the bots will crash because they can't find the installed libraries.*
 
 2.  **Run the Master Controller**:
     ```bash

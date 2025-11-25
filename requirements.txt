@@ -5,3 +5,4 @@ schedule
 yfinance
 mplfinance
 streamlit
+pandas_ta

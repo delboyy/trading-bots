@@ -132,7 +132,7 @@ class LiveBotController:
         try:
             # Start the bot process
             process = subprocess.Popen(
-                [sys.executable, script_path],
+                [sys.executable, str(script_path)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=os.getcwd()
