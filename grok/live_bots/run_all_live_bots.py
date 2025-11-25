@@ -13,6 +13,9 @@ import logging
 from typing import List, Dict, Any
 from pathlib import Path
 
+# Create logs directory BEFORE setting up logging
+os.makedirs('logs', exist_ok=True)
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -24,8 +27,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger('MASTER_BOT_CONTROLLER')
 
-# Create logs directory
-os.makedirs('logs', exist_ok=True)
 
 class LiveBotController:
     """Controls multiple live trading bots running in parallel"""

@@ -30,14 +30,6 @@ If you need to wipe the slate clean and start over (e.g., to pull the latest cod
     cd trading-bots
     ```
 
-4.  **Run Setup Script**:
-    ```bash
-    bash setup_vps.sh
-    ```
-
-5.  **Activate Environment**:
-    ```bash
-    source venv/bin/activate
     ```
 
 6.  **Re-Export Keys** (if not in `.bashrc`):
