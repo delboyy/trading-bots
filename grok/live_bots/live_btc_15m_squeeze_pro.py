@@ -66,7 +66,7 @@ class BTCSqueezeProBot:
 
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
-        self.symbol = 'BTCUSD'
+        self.symbol = 'BTC/USD'
         self.timeframe = TimeFrame(15, TimeFrameUnit.Minute)
         
         # Risk management

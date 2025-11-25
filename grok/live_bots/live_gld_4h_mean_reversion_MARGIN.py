@@ -196,8 +196,8 @@ class GLDMeanReversionMarginBot:
             bars = self.api.get_bars(
                 self.symbol,
                 self.timeframe,
-                start=start_time.isoformat(),
-                end=end_time.isoformat(),
+                start=start_time.isoformat(timespec='seconds'),
+                end=end_time.isoformat(timespec='seconds'),
                 limit=1000
             )
 

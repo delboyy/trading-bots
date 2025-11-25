@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import pandas as pd
 import numpy as np
-from alpaca_trade_api import REST, TimeFrame
+from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 import schedule
 
 # Add project root to path for imports
@@ -73,7 +73,7 @@ class GLDMeanReversionBot:
 
         # Strategy parameters
         self.symbol = 'GLD'  # Gold ETF
-        self.timeframe = TimeFrame.Hour * 4  # 4-hour bars
+        self.timeframe = TimeFrame(4, TimeFrameUnit.Hour)  # 4-hour bars
         self.window = 30
         self.z_thresh = 1.5
 
@@ -153,8 +153,8 @@ class GLDMeanReversionBot:
             bars = self.api.get_bars(
                 self.symbol,
                 self.timeframe,
-                start=start_time.isoformat(),
-                end=end_time.isoformat(),
+                start=start_time.isoformat(timespec='seconds'),
+                end=end_time.isoformat(timespec='seconds'),
                 limit=1000
             )
 

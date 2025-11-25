@@ -251,12 +251,12 @@ class TSLAFibLocalExtremaBot:
 
         try:
             while not stop_flag:
-            try:
-                schedule.run_pending()
-                time.sleep(10)
-            except Exception as e:
-                logger.error(f"Loop error: {e}")
-                time.sleep(60)
+                try:
+                    schedule.run_pending()
+                    time.sleep(10)
+                except Exception as e:
+                    logger.error(f"Loop error: {e}")
+                    time.sleep(60)
         except KeyboardInterrupt:
             logger.info("Bot stopped by user (Ctrl+C)")
         except Exception as e:

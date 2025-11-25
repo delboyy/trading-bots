@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import pandas as pd
 import numpy as np
-from alpaca_trade_api import REST, TimeFrame
+from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 import schedule
 
 # Add project root to path for imports
@@ -51,7 +51,7 @@ class NQ4HVolatilityBreakoutBot:
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
         self.symbol = '/NQ'  # Nasdaq-100 futures (Alpaca format)
-        self.timeframe = TimeFrame.Hour * 4
+        self.timeframe = TimeFrame(4, TimeFrameUnit.Hour)
         self.atr_window = 14
         self.k = 1.5
 
@@ -129,8 +129,8 @@ class NQ4HVolatilityBreakoutBot:
             bars = self.api.get_bars(
                 self.symbol,
                 self.timeframe,
-                start=start_time.isoformat(),
-                end=end_time.isoformat(),
+                start=start_time.isoformat(timespec='seconds'),
+                end=end_time.isoformat(timespec='seconds'),
                 limit=1000
             )
 

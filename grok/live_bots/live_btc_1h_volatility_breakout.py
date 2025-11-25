@@ -53,7 +53,7 @@ class BTCVolatilityBreakoutBot:
 
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
-        self.symbol = 'BTCUSD'
+        self.symbol = 'BTC/USD'
         self.timeframe = TimeFrame.Hour
         self.atr_window = 14
         self.k = 2.0
@@ -132,8 +132,8 @@ class BTCVolatilityBreakoutBot:
             bars = self.api.get_crypto_bars(
                 self.symbol,
                 self.timeframe,
-                start=start_time.isoformat(),
-                end=end_time.isoformat(),
+                start=start_time.isoformat(timespec='seconds'),
+                end=end_time.isoformat(timespec='seconds'),
                 limit=1000
             )
 
