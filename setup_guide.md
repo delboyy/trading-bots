@@ -54,7 +54,28 @@ If you need to wipe the slate clean and start over (e.g., to pull the latest cod
 
 ---
 
-## �🛠️ Step 1: Initial VPS Setup
+## 🔄 Updating the Code (The Easy Way)
+
+If `git pull` is giving you errors about "local changes" or "overwritten files", use this command to **force** an update (this discards local changes to code, but keeps your logs and env vars):
+
+```bash
+# 1. Fetch the latest code
+git fetch --all
+
+# 2. Reset your local code to match the server exactly
+git reset --hard origin/main
+
+# 3. Re-install requirements (just in case)
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 4. Restart everything
+python grok/live_bots/run_all_live_bots.py
+```
+
+---
+
+## 🛠️ Step 1: Initial VPS Setup
 
 1.  **Connect to your VPS** via SSH:
     ```bash
