@@ -52,6 +52,16 @@ class StatusTracker:
                             data = json.load(f)
                         except json.JSONDecodeError:
                             data = {}
+                        
+                        # Auto-capture start_equity on first update (for P&L tracking)
+                        if bot_id not in data and 'equity' in status_data:
+                            status_data['start_equity'] = status_data['equity']
+                        elif bot_id in data and 'start_equity' in data[bot_id]:
+                            # Preserve existing start_equity
+                            status_data['start_equity'] = data[bot_id]['start_equity']
+                        elif 'equity' in status_data:
+                            # Fallback: set start_equity if missing
+                            status_data['start_equity'] = status_data.get('start_equity', status_data['equity'])
                             
                         # Update bot data
                         data[bot_id] = status_data
@@ -67,3 +77,4 @@ class StatusTracker:
                 break
             except IOError:
                 time.sleep(0.1)
+

@@ -148,20 +148,39 @@ class LiveBotController:
             logger.info(f"Started bot: {self.bot_info[bot_key]['name']}")
             
             # Start a thread to capture and log stderr
-            def log_stderr():
+            def log_stderr(filter_level=None):
                 try:
                     with open(bot_log_file, 'a') as f:
                         for line in process.stderr:
                             error_msg = line.strip()
                             if error_msg:
-                                logger.error(f"Bot {bot_key} ERROR: {error_msg}")
+                                # Determine log level
+                                is_error = 'ERROR' in error_msg or 'CRITICAL' in error_msg or 'WARNING' in error_msg
+                                is_trade = any(keyword in error_msg for keyword in ['order', 'Order', 'position', 'Position', 'trade', 'Trade', 'buy', 'sell', 'Buy', 'Sell'])
+                                is_info = 'INFO' in error_msg
+                                
+                                # Apply filter if specified
+                                should_log = True
+                                if filter_level == 'errors' and not is_error:
+                                    should_log = False
+                                elif filter_level == 'trades' and not is_trade:
+                                    should_log = False
+                                elif filter_level == 'info' and not (is_info and not is_error):
+                                    should_log = False
+                                
+                                if should_log:
+                                    logger.error(f"Bot {bot_key} ERROR: {error_msg}")
+                                
+                                # Always write to file
                                 f.write(f"{error_msg}\n")
                                 f.flush()
                 except Exception as e:
                     logger.error(f"Error logging stderr for {bot_key}: {e}")
             
             import threading
-            stderr_thread = threading.Thread(target=log_stderr, daemon=True)
+            # Get filter level from instance variable if set
+            filter_level = getattr(self, 'log_filter', None)
+            stderr_thread = threading.Thread(target=lambda: log_stderr(filter_level), daemon=True)
             stderr_thread.start()
             
             return True
@@ -286,7 +305,10 @@ class LiveBotController:
             print("  start_all          - Start all bots")
             print("  stop_all           - Stop all bots")
             print("  status             - Show detailed status")
-            print("  monitor            - Start monitoring mode")
+            print("  monitor            - Monitor all logs (verbose)")
+            print("  monitor_errors     - Monitor ERRORS only")
+            print("  monitor_trades     - Monitor TRADES only")
+            print("  monitor_info       - Monitor INFO logs only")
             print("  exit               - Exit controller")
 
             try:
@@ -304,7 +326,20 @@ class LiveBotController:
                     for key, info in status.items():
                         print(f"  {key}: {info['name']} - {'RUNNING' if info['running'] else 'STOPPED'}")
                 elif command == 'monitor':
-                    print("Entering monitoring mode... (Ctrl+C to exit)")
+                    print("Entering monitoring mode (ALL LOGS)... (Ctrl+C to exit)")
+                    self.log_filter = None
+                    self.monitor_bots()
+                elif command == 'monitor_errors':
+                    print("Entering ERROR monitoring mode... (Ctrl+C to exit)")
+                    self.log_filter = 'errors'
+                    self.monitor_bots()
+                elif command == 'monitor_trades':
+                    print("Entering TRADE monitoring mode... (Ctrl+C to exit)")
+                    self.log_filter = 'trades'
+                    self.monitor_bots()
+                elif command == 'monitor_info':
+                    print("Entering INFO monitoring mode... (Ctrl+C to exit)")
+                    self.log_filter = 'info'
                     self.monitor_bots()
                 elif command.startswith('start '):
                     bot_key = command.split()[1]

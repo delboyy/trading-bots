@@ -33,7 +33,7 @@ def get_max_duration_for_bar_size(bar_size):
     return bar_size_limits.get(bar_size, ("1 M", 30))
 
 
-def fetch_in_chunks(contract, end_datetime, total_years, bar_size, whatToShow="TRADES"):
+def fetch_in_chunks(contract, end_datetime, total_years, bar_size, whatToShow="TRADES", start_datetime=None):
     """
     Fetch historical data in chunks to respect IBKR limits
 
@@ -53,8 +53,9 @@ def fetch_in_chunks(contract, end_datetime, total_years, bar_size, whatToShow="T
     # Get IBKR limits for this bar size
     max_duration, chunk_days = get_max_duration_for_bar_size(bar_size)
 
-    # Calculate start date
-    start_datetime = end_datetime - timedelta(days=int(total_years * 365.25))
+    # Use provided start_datetime or calculate from total_years
+    if start_datetime is None:
+        start_datetime = end_datetime - timedelta(days=int(total_years * 365.25))
 
     print(f"Date range: {start_datetime.date()} to {end_datetime.date()}")
     print(f"Chunk size: {chunk_days} days (IBKR limit for {bar_size})")
@@ -78,6 +79,12 @@ def fetch_in_chunks(contract, end_datetime, total_years, bar_size, whatToShow="T
         for attempt in range(max_retries):
             try:
                 # Request historical data
+                # For custom date ranges, adjust the duration to match the chunk
+                if start_datetime is not None:
+                    # Calculate exact duration for this chunk
+                    chunk_duration_days = min(chunk_days, (current_end - chunk_start).days)
+                    duration_str = f"{chunk_duration_days} D"
+
                 bars = ib.reqHistoricalData(
                     contract,
                     endDateTime=current_end,
@@ -152,12 +159,29 @@ def main():
     if len(sys.argv) >= 4:
         symbol = sys.argv[1].strip().upper()
         bar_size = sys.argv[2].strip()
-        years = int(sys.argv[3].strip())
+
+        # Check if third argument is a date (contains hyphens) or a number
+        third_arg = sys.argv[3].strip()
+        if '-' in third_arg:
+            # Custom date range mode: symbol, bar_size, start_date, end_date
+            start_date = third_arg
+            end_date = sys.argv[4] if len(sys.argv) > 4 else None
+            years = 2  # Calculate based on date range
+            use_custom_dates = True
+        else:
+            # Standard mode: symbol, bar_size, years
+            years = int(third_arg)
+            use_custom_dates = False
+            start_date = None
+            end_date = None
     else:
         # Default values for testing
         symbol = "GOOGL"
         bar_size = "15 mins"
         years = 2
+        use_custom_dates = False
+        start_date = None
+        end_date = None
 
     print("IBKR Historical Data Downloader")
     print("=" * 40)
@@ -208,7 +232,15 @@ def main():
         end_datetime = datetime.now()
 
         # Fetch data with chunking
-        df = fetch_in_chunks(contract, end_datetime, years, bar_size, "TRADES")
+        if use_custom_dates:
+            # For custom dates, set end_datetime to the requested end date
+            # and calculate duration from start to end
+            custom_end = datetime.strptime(end_date, "%Y-%m-%d")
+            custom_start = datetime.strptime(start_date, "%Y-%m-%d")
+            total_days = (custom_end - custom_start).days
+            df = fetch_in_chunks(contract, custom_end, total_days/365.25, bar_size, "TRADES", custom_start)
+        else:
+            df = fetch_in_chunks(contract, end_datetime, years, bar_size, "TRADES")
 
         if not df.empty:
             # Create output directory

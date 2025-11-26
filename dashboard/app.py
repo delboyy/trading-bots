@@ -112,19 +112,44 @@ else:
         height=400
     )
 
+
     # --- Errors Tab ---
     st.subheader("⚠️ System Health & Errors")
     error_bots = [b for b in bot_rows if b.get('Error')]
     
+    # Master Error Log (All Bots)
+    st.markdown("### 🔴 Master Error Log (All Bots)")
     if error_bots:
         st.error(f"Detected {len(error_bots)} bots with errors!")
+        
+        # Create a combined error log
+        error_log_data = []
         for bot in error_bots:
-            with st.expander(f"🚨 {bot['Bot Name']} Error", expanded=True):
-                st.write(f"**Time:** {bot['Last Update']}")
-                st.code(bot['Error'])
+            error_log_data.append({
+                "Bot": bot['Bot Name'],
+                "Time": bot['Last Update'],
+                "Error": bot['Error'][:100] + "..." if len(str(bot['Error'])) > 100 else bot['Error']
+            })
+        
+        error_df = pd.DataFrame(error_log_data)
+        st.dataframe(
+            error_df.style.applymap(
+                lambda x: 'background-color: #ffebee', subset=['Error']
+            ),
+            use_container_width=True,
+            height=200
+        )
     else:
         st.success("✅ All systems operational. No active errors.")
     
+    # Individual Bot Errors (Expandable)
+    if error_bots:
+        st.markdown("### 📋 Individual Bot Error Details")
+        for bot in error_bots:
+            with st.expander(f"🚨 {bot['Bot Name']} Error"):
+                st.write(f"**Time:** {bot['Last Update']}")
+                st.code(bot['Error'])
+
     # --- Log Viewer (Optional) ---
     st.subheader("Recent Logs")
     log_file = st.selectbox("Select Log File", os.listdir("logs") if os.path.exists("logs") else [])
@@ -135,3 +160,4 @@ else:
 
     time.sleep(30)
     st.rerun()
+
