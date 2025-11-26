@@ -143,13 +143,15 @@ class LiveBotController:
             bot_log_file = f"logs/{bot_key}_error.log"
             
             # Start the bot process with error logging
+            # CRITICAL: start_new_session=True prevents Ctrl+C from killing bots
             process = subprocess.Popen(
                 [sys.executable, str(script_path)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=os.getcwd(),
                 text=True,
-                bufsize=1
+                bufsize=1,
+                start_new_session=True  # Isolate from parent's signal group
             )
 
             self.bot_processes[bot_key] = process
@@ -249,6 +251,18 @@ class LiveBotController:
     def get_status(self) -> Dict[str, Any]:
         """Get status of all bots"""
         status = {}
+        
+        # Clean up dead processes first
+        dead_bots = []
+        for bot_key, process in list(self.bot_processes.items()):
+            if process.poll() is not None:  # Process has terminated
+                dead_bots.append(bot_key)
+        
+        # Remove dead processes from tracking
+        for bot_key in dead_bots:
+            del self.bot_processes[bot_key]
+        
+        # Build status for all bots
         for bot_key, info in self.bot_info.items():
             is_running = bot_key in self.bot_processes
             if is_running:

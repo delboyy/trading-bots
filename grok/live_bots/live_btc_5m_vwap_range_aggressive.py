@@ -153,7 +153,7 @@ class BTCVWAPRangeAggressiveBot:
             self.daily_trades = []
             self.daily_pnl = 0
             self.daily_fees = 0
-            logger.info(".2f")
+            logger.info(f"Daily reset - Starting capital: ${self.daily_start_capital:.2f}")
 
         # Calculate current drawdown
         drawdown = (self.daily_start_capital - self.current_capital) / self.daily_start_capital
@@ -181,7 +181,7 @@ class BTCVWAPRangeAggressiveBot:
         # Check if deviation exceeds threshold
         if abs(deviation_pct) > self.entry_threshold:
             direction = "LONG" if deviation_pct > 0 else "SHORT"
-            logger.info(".2%")
+            logger.info(f"Entry signal: {direction} at ${current_price:.2f}, VWAP deviation: {deviation_pct:.2%}")
             return True
 
         return False
@@ -217,7 +217,7 @@ class BTCVWAPRangeAggressiveBot:
             effective_capital = self.current_capital - entry_fee
             position_size = effective_capital / self.entry_price
 
-            logger.info(".2f")
+            logger.info(f"Executing {side} order: ${effective_capital:.2f} @ ${self.entry_price:.2f}")
 
             # Submit market order (no bracket orders for crypto)
             order = self.api.submit_order(
@@ -342,7 +342,7 @@ class BTCVWAPRangeAggressiveBot:
             self.daily_pnl += net_pnl
             self.daily_fees += exit_fee
 
-            logger.info(".2%")
+            logger.info(f"Position closed - P&L: ${net_pnl:.2f} ({(net_pnl/self.daily_start_capital)*100:.2%})")
 
             # Reset position
             self.position = 0
@@ -357,12 +357,12 @@ class BTCVWAPRangeAggressiveBot:
             win_rate = sum(1 for t in self.daily_trades if t > 0) / len(self.daily_trades)
             avg_trade = np.mean(self.daily_trades) if self.daily_trades else 0
 
-            logger.info("
-📊 DAILY PERFORMANCE SUMMARY:"            logger.info(".2f")
-            logger.info(".1%")
-            logger.info(".2%")
-            logger.info(".2%")
-            logger.info(".4%")
+            logger.info("📊 DAILY PERFORMANCE SUMMARY:")
+            logger.info(f"Total Trades: {len(self.daily_trades)}")
+            logger.info(f"Win Rate: {win_rate:.1%}")
+            logger.info(f"Daily P&L: ${self.daily_pnl:.2f} ({(self.daily_pnl/self.daily_start_capital)*100:.2f}%)")
+            logger.info(f"Total Fees: ${self.daily_fees:.2f}")
+            logger.info(f"Average Trade: ${avg_trade:.2f}")
 
     def run(self):
         """Main trading loop"""
