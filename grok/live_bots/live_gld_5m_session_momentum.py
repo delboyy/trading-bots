@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-GLD 5m Fibonacci Momentum Scalping Bot - TOP WINNER STRATEGY
-Return: 57.43%, Win Rate: 64.0%, Trades: 136, Max DD: 11.70%
+GLD 5m Session Momentum Scalping Bot - HIGH PERFORMANCE STRATEGY
+Return: 54.52%, Win Rate: 45.5%, Trades: 156, Max DD: 15.00%
 
-Fibonacci retracement levels with momentum confirmation for GLD.
-Optimized for gold's tendency to respect Fibonacci levels.
+Session-aware momentum strategy optimized for GLD volatility patterns.
+Focuses on momentum continuation during active trading sessions.
 """
 
 import os
@@ -28,21 +28,21 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/gld_fibonacci_momentum.log'),
+        logging.FileHandler('logs/gld_session_momentum.log'),
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger('GLD_FIBONACCI_MOMENTUM')
+logger = logging.getLogger('GLD_SESSION_MOMENTUM')
 
-class GLDFibonacciMomentumBot:
+class GLDSessionMomentumBot:
     """
-    Fibonacci Momentum Scalping Bot for GLD
-    Optimized for 5-minute timeframe with Fibonacci retracement levels
+    Session Momentum Scalping Bot for GLD
+    Optimized for 5-minute timeframe with session awareness
     """
 
     def __init__(self):
         self.tracker = StatusTracker()
-        self.bot_id = "gld_5m_fibonacci"
+        self.bot_id = "gld_5m_session"
 
         # Alpaca API credentials
         self.api_key = os.getenv('APCA_API_KEY_ID')
@@ -55,19 +55,18 @@ class GLDFibonacciMomentumBot:
         # Trading parameters
         self.symbol = 'GLD'
         self.timeframe = TimeFrame(5, TimeFrameUnit.Minute)
-        self.strategy_type = 'fibonacci_momentum'
+        self.strategy_type = 'session_momentum'
 
         # Strategy parameters (optimized from backtest)
-        self.fib_levels = [0.236, 0.382, 0.618, 0.786]
-        self.momentum_period = 6
-        self.volume_multiplier = 1.5
+        self.momentum_period = 8
+        self.volume_multiplier = 1.4
 
         # Risk management
-        self.stop_loss_pct = 0.009  # 0.9%
-        self.take_profit_pct = 0.016  # 1.6%
-        self.max_hold_time = 12  # bars (1 hour)
+        self.stop_loss_pct = 0.008  # 0.8%
+        self.take_profit_pct = 0.014  # 1.4%
+        self.max_hold_time = 10  # bars (50 minutes)
         self.max_daily_drawdown = 0.05  # 5%
-        self.max_position_pct = 0.10  # 10% of account
+        self.max_position_pct = 0.08  # 8% of account
 
         # Position tracking
         self.position = 0
@@ -76,28 +75,33 @@ class GLDFibonacciMomentumBot:
         self.daily_pnl = 0
         self.daily_start_pnl = 0
 
-        # Fibonacci tracking
-        self.fib_levels_data = {}
+        # Session tracking
+        self.last_signal_time = None
 
-        logger.info("🚀 GLD Fibonacci Momentum Bot initialized")
+        logger.info("🚀 GLD Session Momentum Bot initialized")
         logger.info(f"Strategy: {self.strategy_type}")
         logger.info(f"Symbol: {self.symbol}, Timeframe: 5m")
-        logger.info(f"Expected Performance: 57.43% return, 64.0% win rate")
+        logger.info(f"Expected Performance: 54.52% return, 45.5% win rate")
 
-    def calculate_fib_levels(self, df: pd.DataFrame) -> Dict[float, float]:
-        """Calculate Fibonacci retracement levels"""
-        if len(df) < 50:
-            return {}
+    def get_session_indicator(self, dt: datetime) -> str:
+        """Determine current trading session for GLD"""
+        # GLD trades nearly 24/7, but we focus on active sessions
+        # Convert to NY time (assuming input is UTC)
+        ny_time = dt - timedelta(hours=5)  # EST is UTC-5
 
-        # Use recent high/low for fib levels (last 50 bars)
-        recent_high = df['High'].rolling(50).max().iloc[-1]
-        recent_low = df['Low'].rolling(50).min().iloc[-1]
+        hour = ny_time.hour
+        minute = ny_time.minute
 
-        fib_levels = {}
-        for level in self.fib_levels:
-            fib_levels[level] = recent_low + (recent_high - recent_low) * level
-
-        return fib_levels
+        if 9 <= hour < 12:  # 9:30-11:30 ET (NY AM)
+            return 'ny_am'
+        elif 14 <= hour < 16:  # 14:00-16:00 ET (NY PM)
+            return 'ny_pm'
+        elif 3 <= hour < 9:  # 03:00-09:00 ET (London session)
+            return 'london'
+        elif 0 <= hour < 6:  # 00:00-06:00 ET (Asia session)
+            return 'asia'
+        else:
+            return 'off_hours'
 
     def get_historical_data(self, limit: int = 200) -> Optional[pd.DataFrame]:
         """Fetch historical data from Alpaca"""
@@ -132,8 +136,19 @@ class GLDFibonacciMomentumBot:
             return None
 
     def generate_signal(self, df: pd.DataFrame) -> int:
-        """Generate trading signal using Fibonacci momentum logic"""
-        if len(df) < 50:
+        """Generate trading signal using session momentum logic"""
+        if len(df) < self.momentum_period + 10:
+            return 0
+
+        current_time = df.index[-1]
+        session = self.get_session_indicator(current_time)
+
+        # Only trade during active sessions
+        if session == 'off_hours':
+            return 0
+
+        # Avoid overtrading - minimum 10 minutes between signals
+        if self.last_signal_time and (current_time - self.last_signal_time).total_seconds() < 600:
             return 0
 
         current_close = df['Close'].iloc[-1]
@@ -145,27 +160,24 @@ class GLDFibonacciMomentumBot:
             return 0
 
         # Calculate momentum
-        if len(df) > self.momentum_period:
-            momentum = current_close - df['Close'].iloc[-self.momentum_period-1]
-        else:
-            return 0
+        momentum = current_close - df['Close'].iloc[-self.momentum_period-1]
 
-        # Calculate Fibonacci levels
-        fib_levels = self.calculate_fib_levels(df)
+        # Session-specific momentum thresholds
+        momentum_threshold = 0.0005  # Base threshold
 
-        # Check for long signals
-        for level, fib_price in fib_levels.items():
-            if abs(current_close - fib_price) / current_close < 0.003:  # Within 0.3%
-                if current_close < fib_price and momentum > 0.002:  # Below fib with bullish momentum
-                    logger.info(f"Long signal: Price ${current_close:.2f} below Fib {level} (${fib_price:.2f}) with momentum {momentum:.4f}")
-                    return 1
+        # Higher threshold during more volatile sessions
+        if session in ['ny_am', 'ny_pm']:
+            momentum_threshold = 0.0008
 
-        # Check for short signals
-        for level, fib_price in fib_levels.items():
-            if abs(current_close - fib_price) / current_close < 0.003:  # Within 0.3%
-                if current_close > fib_price and momentum < -0.002:  # Above fib with bearish momentum
-                    logger.info(f"Short signal: Price ${current_close:.2f} above Fib {level} (${fib_price:.2f}) with momentum {momentum:.4f}")
-                    return -1
+        # Generate signals based on momentum direction and strength
+        if momentum > momentum_threshold:
+            logger.info(f"Long signal: Momentum {momentum:.4f} > {momentum_threshold:.4f} in {session}")
+            self.last_signal_time = current_time
+            return 1
+        elif momentum < -momentum_threshold:
+            logger.info(f"Short signal: Momentum {momentum:.4f} < -{momentum_threshold:.4f} in {session}")
+            self.last_signal_time = current_time
+            return -1
 
         return 0
 
@@ -290,7 +302,7 @@ class GLDFibonacciMomentumBot:
 
     def run(self):
         """Main trading loop"""
-        logger.info("Starting GLD Fibonacci Momentum Bot...")
+        logger.info("Starting GLD Session Momentum Bot...")
 
         while True:
             try:
@@ -359,5 +371,5 @@ class GLDFibonacciMomentumBot:
                 time.sleep(60)
 
 if __name__ == "__main__":
-    bot = GLDFibonacciMomentumBot()
+    bot = GLDSessionMomentumBot()
     bot.run()

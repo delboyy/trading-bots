@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-GLD 5m Fibonacci Momentum Scalping Bot - TOP WINNER STRATEGY
-Return: 57.43%, Win Rate: 64.0%, Trades: 136, Max DD: 11.70%
+GLD 5m ATR Range Scalping Bot - SOLID PERFORMANCE STRATEGY
+Return: 40.45%, Win Rate: 55.1%, Trades: 501, Max DD: 16.24%
 
-Fibonacci retracement levels with momentum confirmation for GLD.
-Optimized for gold's tendency to respect Fibonacci levels.
+ATR-based range scalping optimized for GLD's volatility patterns.
+Identifies ranging markets and trades breakouts within volatility bands.
 """
 
 import os
@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import pandas as pd
+import numpy as np
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]
@@ -28,21 +29,21 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/gld_fibonacci_momentum.log'),
+        logging.FileHandler('logs/gld_atr_range_scalping.log'),
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger('GLD_FIBONACCI_MOMENTUM')
+logger = logging.getLogger('GLD_ATR_RANGE_SCALPING')
 
-class GLDFibonacciMomentumBot:
+class GLDATRRangeScalpingBot:
     """
-    Fibonacci Momentum Scalping Bot for GLD
-    Optimized for 5-minute timeframe with Fibonacci retracement levels
+    ATR Range Scalping Bot for GLD
+    Optimized for 5-minute timeframe with volatility-based entries
     """
 
     def __init__(self):
         self.tracker = StatusTracker()
-        self.bot_id = "gld_5m_fibonacci"
+        self.bot_id = "gld_5m_atr_range"
 
         # Alpaca API credentials
         self.api_key = os.getenv('APCA_API_KEY_ID')
@@ -55,19 +56,19 @@ class GLDFibonacciMomentumBot:
         # Trading parameters
         self.symbol = 'GLD'
         self.timeframe = TimeFrame(5, TimeFrameUnit.Minute)
-        self.strategy_type = 'fibonacci_momentum'
+        self.strategy_type = 'atr_range_scalping'
 
         # Strategy parameters (optimized from backtest)
-        self.fib_levels = [0.236, 0.382, 0.618, 0.786]
-        self.momentum_period = 6
-        self.volume_multiplier = 1.5
+        self.atr_period = 14
+        self.range_multiplier = 0.7
+        self.volume_multiplier = 1.2
 
         # Risk management
-        self.stop_loss_pct = 0.009  # 0.9%
-        self.take_profit_pct = 0.016  # 1.6%
-        self.max_hold_time = 12  # bars (1 hour)
+        self.stop_loss_pct = 0.005  # 0.5%
+        self.take_profit_pct = 0.01  # 1.0%
+        self.max_hold_time = 8  # bars (40 minutes)
         self.max_daily_drawdown = 0.05  # 5%
-        self.max_position_pct = 0.10  # 10% of account
+        self.max_position_pct = 0.06  # 6% of account
 
         # Position tracking
         self.position = 0
@@ -76,28 +77,26 @@ class GLDFibonacciMomentumBot:
         self.daily_pnl = 0
         self.daily_start_pnl = 0
 
-        # Fibonacci tracking
-        self.fib_levels_data = {}
+        # Range tracking
+        self.last_signal_time = None
 
-        logger.info("🚀 GLD Fibonacci Momentum Bot initialized")
+        logger.info("🚀 GLD ATR Range Scalping Bot initialized")
         logger.info(f"Strategy: {self.strategy_type}")
         logger.info(f"Symbol: {self.symbol}, Timeframe: 5m")
-        logger.info(f"Expected Performance: 57.43% return, 64.0% win rate")
+        logger.info(f"Expected Performance: 40.45% return, 55.1% win rate")
 
-    def calculate_fib_levels(self, df: pd.DataFrame) -> Dict[float, float]:
-        """Calculate Fibonacci retracement levels"""
-        if len(df) < 50:
-            return {}
+    def calculate_atr(self, df: pd.DataFrame) -> pd.Series:
+        """Calculate Average True Range"""
+        if len(df) < self.atr_period:
+            return pd.Series([0] * len(df), index=df.index)
 
-        # Use recent high/low for fib levels (last 50 bars)
-        recent_high = df['High'].rolling(50).max().iloc[-1]
-        recent_low = df['Low'].rolling(50).min().iloc[-1]
+        high_low = df['High'] - df['Low']
+        high_close = (df['High'] - df['Close'].shift(1)).abs()
+        low_close = (df['Low'] - df['Close'].shift(1)).abs()
 
-        fib_levels = {}
-        for level in self.fib_levels:
-            fib_levels[level] = recent_low + (recent_high - recent_low) * level
-
-        return fib_levels
+        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+        atr = tr.rolling(self.atr_period).mean()
+        return atr
 
     def get_historical_data(self, limit: int = 200) -> Optional[pd.DataFrame]:
         """Fetch historical data from Alpaca"""
@@ -131,9 +130,40 @@ class GLDFibonacciMomentumBot:
             logger.error(f"Error fetching historical data: {e}")
             return None
 
+    def is_ranging_market(self, df: pd.DataFrame) -> bool:
+        """Determine if current market is in a ranging phase"""
+        if len(df) < 20:
+            return False
+
+        # Calculate ATR
+        atr = self.calculate_atr(df)
+        current_atr = atr.iloc[-1]
+
+        # Check recent volatility (last 10 bars)
+        recent_high = df['High'].tail(10).max()
+        recent_low = df['Low'].tail(10).min()
+        recent_range = recent_high - recent_low
+
+        # Market is ranging if ATR-based range is significant portion of price
+        current_price = df['Close'].iloc[-1]
+        range_percentage = recent_range / current_price
+
+        # Ranging market if range is reasonable (not too volatile, not too quiet)
+        return 0.005 < range_percentage < 0.02 and recent_range > current_atr * self.range_multiplier
+
     def generate_signal(self, df: pd.DataFrame) -> int:
-        """Generate trading signal using Fibonacci momentum logic"""
-        if len(df) < 50:
+        """Generate trading signal using ATR range scalping logic"""
+        if len(df) < self.atr_period + 10:
+            return 0
+
+        # Check if market is ranging
+        if not self.is_ranging_market(df):
+            return 0
+
+        current_time = df.index[-1]
+
+        # Avoid overtrading - minimum 15 minutes between signals
+        if self.last_signal_time and (current_time - self.last_signal_time).total_seconds() < 900:
             return 0
 
         current_close = df['Close'].iloc[-1]
@@ -144,28 +174,30 @@ class GLDFibonacciMomentumBot:
         if current_volume < avg_volume * self.volume_multiplier:
             return 0
 
-        # Calculate momentum
-        if len(df) > self.momentum_period:
-            momentum = current_close - df['Close'].iloc[-self.momentum_period-1]
-        else:
-            return 0
+        # Calculate recent range levels
+        recent_high = df['High'].tail(10).max()
+        recent_low = df['Low'].tail(10).min()
+        range_width = recent_high - recent_low
 
-        # Calculate Fibonacci levels
-        fib_levels = self.calculate_fib_levels(df)
+        # Calculate ATR for position sizing
+        atr = self.calculate_atr(df)
+        current_atr = atr.iloc[-1]
 
-        # Check for long signals
-        for level, fib_price in fib_levels.items():
-            if abs(current_close - fib_price) / current_close < 0.003:  # Within 0.3%
-                if current_close < fib_price and momentum > 0.002:  # Below fib with bullish momentum
-                    logger.info(f"Long signal: Price ${current_close:.2f} below Fib {level} (${fib_price:.2f}) with momentum {momentum:.4f}")
-                    return 1
+        # Range breakout signals
+        near_low = current_close <= recent_low + range_width * 0.1
+        near_high = current_close >= recent_high - range_width * 0.1
 
-        # Check for short signals
-        for level, fib_price in fib_levels.items():
-            if abs(current_close - fib_price) / current_close < 0.003:  # Within 0.3%
-                if current_close > fib_price and momentum < -0.002:  # Above fib with bearish momentum
-                    logger.info(f"Short signal: Price ${current_close:.2f} above Fib {level} (${fib_price:.2f}) with momentum {momentum:.4f}")
-                    return -1
+        # Momentum confirmation
+        short_momentum = current_close - df['Close'].iloc[-3] if len(df) > 3 else 0
+
+        if near_low and short_momentum > current_atr * 0.3:
+            logger.info(f"Long signal: Near range low ${current_close:.2f}, momentum {short_momentum:.4f}")
+            self.last_signal_time = current_time
+            return 1
+        elif near_high and short_momentum < -current_atr * 0.3:
+            logger.info(f"Short signal: Near range high ${current_close:.2f}, momentum {short_momentum:.4f}")
+            self.last_signal_time = current_time
+            return -1
 
         return 0
 
@@ -290,7 +322,7 @@ class GLDFibonacciMomentumBot:
 
     def run(self):
         """Main trading loop"""
-        logger.info("Starting GLD Fibonacci Momentum Bot...")
+        logger.info("Starting GLD ATR Range Scalping Bot...")
 
         while True:
             try:
@@ -359,5 +391,5 @@ class GLDFibonacciMomentumBot:
                 time.sleep(60)
 
 if __name__ == "__main__":
-    bot = GLDFibonacciMomentumBot()
+    bot = GLDATRRangeScalpingBot()
     bot.run()
