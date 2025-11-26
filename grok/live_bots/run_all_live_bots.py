@@ -46,6 +46,7 @@ class LiveBotController:
             'tsla_4h': 'live_tsla_4h_volatility_breakout.py',
             'nq_4h': 'live_nq_4h_volatility_breakout.py',
             'btc_1h': 'live_btc_1h_volatility_breakout.py',
+            'btc_5m_vwap': 'live_btc_5m_vwap_range_aggressive.py',
             'meta_1h': 'live_meta_1h_volatility_breakout.py',
             'xlk_1h': 'live_xlk_1h_volatility_breakout.py',
             'eth_5m': 'live_eth_5m_fib_zigzag.py',
@@ -63,7 +64,10 @@ class LiveBotController:
             'googl_15m_rsi': 'live_googl_15m_rsi_scalping.py',
             'msft_5m_rsi': 'live_msft_5m_rsi_scalping.py',
             'msft_5m_winner': 'live_msft_5m_rsi_winner.py',
-            'tsla_15m_time': 'live_tsla_15m_time_based_scalping.py'
+            'tsla_15m_time': 'live_tsla_15m_time_based_scalping.py',
+            'gld_5m_atr': 'live_gld_5m_atr_range_scalping.py',
+            'gld_5m_fib': 'live_gld_5m_fibonacci_momentum.py',
+            'gld_5m_session': 'live_gld_5m_session_momentum.py'
         }
 
         self.bot_info = {
@@ -92,7 +96,11 @@ class LiveBotController:
             'googl_15m_rsi': {'name': 'GOOGL 15m RSI Scalping', 'description': 'Scalper - 41.3% Return, 54% Win Rate'},
             'msft_5m_rsi': {'name': 'MSFT 5m RSI Scalping', 'description': 'Scalper - 4% Return, 53.7% Win Rate'},
             'msft_5m_winner': {'name': 'MSFT 5m RSI Winner', 'description': 'Scalper - Validated Winner Strategy'},
-            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'}
+            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'},
+            'gld_5m_atr': {'name': 'GLD 5m ATR Range', 'description': 'Scalper - 40.45% Return, 55.1% Win Rate'},
+            'gld_5m_fib': {'name': 'GLD 5m Fibonacci', 'description': 'Scalper - 57.43% Return, 64% Win Rate'},
+            'gld_5m_session': {'name': 'GLD 5m Session', 'description': 'Scalper - 54.52% Return, 45.5% Win Rate'},
+            'btc_5m_vwap': {'name': 'BTC 5m VWAP Range', 'description': 'Aggressive - 1%+ Daily Target'}
         }
 
     def check_environment(self) -> bool:
@@ -168,7 +176,8 @@ class LiveBotController:
                                 elif filter_level == 'info' and not (is_info and not is_error):
                                     should_log = False
                                 
-                                if should_log:
+                                # Only log to console if monitoring is active
+                                if should_log and getattr(self, 'monitoring_active', False):
                                     logger.error(f"Bot {bot_key} ERROR: {error_msg}")
                                 
                                 # Always write to file
@@ -263,30 +272,41 @@ class LiveBotController:
 
     def monitor_bots(self):
         """Monitor bot status continuously"""
+        print("\n" + "="*80)
+        print("📊 MONITORING MODE ACTIVE")
+        print("="*80)
+        print("Press Ctrl+C to exit monitoring (bots will keep running)")
+        print("="*80 + "\n")
+        
         logger.info("Starting bot monitoring...")
+        self.monitoring_active = True  # Enable console logging
+        
+        try:
+            while True:
+                try:
+                    status = self.get_status()
+                    running_count = sum(1 for s in status.values() if s['running'])
 
-        while True:
-            try:
-                status = self.get_status()
-                running_count = sum(1 for s in status.values() if s['running'])
+                    logger.info(f"Bot Status: {running_count}/{len(status)} running")
 
-                logger.info(f"Bot Status: {running_count}/{len(status)} running")
+                    # Auto-restart stopped bots
+                    for bot_key, bot_status in status.items():
+                        if not bot_status['running'] and bot_key in self.bot_scripts:
+                            logger.warning(f"Bot {bot_key} has stopped, attempting restart...")
+                            self.start_bot(bot_key)
 
-                # Check for crashed bots and restart them
-                for bot_key, bot_status in status.items():
-                    if not bot_status['running'] and bot_key in self.bot_processes:
-                        logger.warning(f"Bot {bot_key} has stopped, attempting restart...")
-                        del self.bot_processes[bot_key]
-                        self.start_bot(bot_key)
+                    time.sleep(60)
 
-                time.sleep(60)  # Check every minute
-
-            except KeyboardInterrupt:
-                logger.info("Monitoring stopped by user")
-                break
-            except Exception as e:
-                logger.error(f"Error in monitoring: {e}")
-                time.sleep(30)
+                except KeyboardInterrupt:
+                    break
+                except Exception as e:
+                    logger.error(f"Monitor error: {e}")
+                    time.sleep(60)
+        finally:
+            self.monitoring_active = False  # Disable console logging when exiting monitor
+            print("\n" + "="*80)
+            print("✅ Exited monitoring mode - All bots still running in background")
+            print("="*80 + "\n")
 
     def show_menu(self):
         """Show interactive menu"""
