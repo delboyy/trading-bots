@@ -153,23 +153,96 @@ class BTCScalpZBot:
         return signal
 
     def place_order(self, side: str, qty: float, sl: float, tp: float) -> bool:
+        """
+        Place market order with separate stop loss and take profit orders.
+        Alpaca doesn't support bracket orders for crypto, so we place them separately.
+        """
         try:
-            self.api.submit_order(
+            # 1. Place market entry order
+            entry_order = self.api.submit_order(
                 symbol=self.symbol,
                 qty=qty,
                 side=side,
                 type='market',
-                time_in_force='gtc',
-                order_class='bracket',
-                stop_loss={'stop_price': round(sl, 2)},
-                take_profit={'limit_price': round(tp, 2)}
+                time_in_force='gtc'
             )
-            logger.info(f"Placed {side} order {qty} @ Market. SL: {sl}, TP: {tp}")
+            logger.info(f"✅ Entry order placed: {side} {qty} @ Market")
+            
+            # Wait a moment for entry to fill
+            import time
+            time.sleep(2)
+            
+            # 2. Place Stop Loss order (opposite side)
+            sl_side = 'sell' if side == 'buy' else 'buy'
+            sl_order = self.api.submit_order(
+                symbol=self.symbol,
+                qty=qty,
+                side=sl_side,
+                type='stop',
+                time_in_force='gtc',
+                stop_price=round(sl, 2)
+            )
+            logger.info(f"🛡️ Stop Loss placed: {sl_side} @ ${sl:.2f}")
+            
+            # 3. Place Take Profit order (opposite side)
+            tp_order = self.api.submit_order(
+                symbol=self.symbol,
+                qty=qty,
+                side=sl_side,  # Same as SL side
+                type='limit',
+                time_in_force='gtc',
+                limit_price=round(tp, 2)
+            )
+            logger.info(f"🎯 Take Profit placed: {sl_side} @ ${tp:.2f}")
+            
+            # Store order IDs for tracking
+            self.active_sl_order = sl_order.id
+            self.active_tp_order = tp_order.id
+            
+            logger.info(f"✅ Complete: Entry + SL + TP orders placed successfully")
             return True
+            
         except Exception as e:
-            logger.error(f"Error placing order: {e}")
-            self.tracker.update_status(self.bot_id, {'error': str(e)})
+            logger.error(f"❌ Error placing orders: {e}")
+            # Try to cancel any partial orders
+            try:
+                self.cancel_all_orders()
+            except:
+                pass
             return False
+    
+    def cancel_all_orders(self):
+        """Cancel all open orders for this symbol"""
+        try:
+            orders = self.api.list_orders(status='open', symbols=[self.symbol])
+            for order in orders:
+                self.api.cancel_order(order.id)
+                logger.info(f"Cancelled order: {order.id}")
+        except Exception as e:
+            logger.error(f"Error cancelling orders: {e}")
+    
+    def check_and_cleanup_orders(self):
+        """
+        Check if TP or SL filled, and cancel the opposite order.
+        This prevents orphaned orders from triggering unwanted trades.
+        """
+        try:
+            # Check if we have active exit orders
+            if not hasattr(self, 'active_sl_order') or not hasattr(self, 'active_tp_order'):
+                return
+            
+            # Get current position
+            pos = self.get_position()
+            
+            # If no position, one of the exit orders filled - cancel the other
+            if not pos:
+                self.cancel_all_orders()
+                self.active_sl_order = None
+                self.active_tp_order = None
+                logger.info("✅ Position closed - exit orders cleaned up")
+                
+        except Exception as e:
+            logger.error(f"Error in order cleanup: {e}")
 
     def run_strategy(self):
         try:
@@ -189,9 +262,16 @@ class BTCScalpZBot:
             
             if pos:
                 self.position = 1 if pos['qty'] > 0 else -1
+                # Check and cleanup exit orders if needed
+                self.check_and_cleanup_orders()
                 return
 
             self.position = 0
+            
+            # Clean up any orphaned orders from previous trades
+            if not pos:
+                self.check_and_cleanup_orders()
+            
             df = self.get_historical_data()
             if df.empty: return
             

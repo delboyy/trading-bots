@@ -151,16 +151,21 @@ python live_bots/live_gld_4h_mean_reversion.py &
 
 ## 📚 DOCUMENTATION
 
-### User Guides
+### 📖 Complete Documentation
+**All setup guides and instructions are in the [`docs/`](docs/) folder:**
+
+- **[Documentation Index](docs/README.md)** - Complete guide navigation
+- **[Setup Guide](docs/setup_guide.md)** - Initial VPS and system setup
+- **[Dual Account Setup](docs/DUAL_ACCOUNT_SETUP.md)** - Run long-term and short-term bots separately
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Command cheat sheet
+- **[Adding New Bots](docs/adding_new_bots.md)** - How to add new trading strategies
+- **[Crypto Order Management](docs/crypto_order_management.md)** - Crypto bot order handling
+- **[Alpaca Symbols Guide](docs/alpaca_symbols_guide.md)** - Supported symbols reference
+
+### System Guides
 - **[grok/README.md](grok/README.md)** - Live trading system overview
 - **[grok/LIVE_BOTS_README.md](grok/LIVE_BOTS_README.md)** - Detailed bot setup
 - **[backtesting/README.md](backtesting/README.md)** - Backtesting framework guide
-
-### Technical Documentation
-- **Strategy Logic:** Complete algorithmic explanations
-- **Risk Management:** Position sizing and stop loss guidelines
-- **Performance Analysis:** Metrics and evaluation methods
-- **API Integration:** Alpaca connection details
 
 ## 🚨 IMPORTANT DISCLAIMERS
 
