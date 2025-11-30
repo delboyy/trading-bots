@@ -79,6 +79,19 @@ class LiveBotController:
             'tsla_15m': {
                 'name': 'TSLA 15m Time-Based', 
                 'description': '✅ SOLID: 0.160%/day, 79% annual, 2yr validated'
+            },
+            # New bots
+            'gld_candlestick': {
+                'name': 'GLD Candlestick Scalping', 
+                'description': '✅ NEW: 69.45% return, 50.3% win rate, 5m scalping'
+            },
+            'gld_fibonacci': {
+                'name': 'GLD Fibonacci Momentum', 
+                'description': '✅ NEW: 66.75% return, 52.3% win rate, 5m momentum'
+            },
+            'googl_rsi': {
+                'name': 'GOOGL RSI Scalping', 
+                'description': '✅ NEW: 71.52% return, 54.1% win rate, 15m RSI'
             }
         }
 
