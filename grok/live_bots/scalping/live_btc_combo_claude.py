@@ -15,15 +15,37 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+import logging
 from datetime import datetime, timedelta
 from alpaca_trade_api.rest import REST, TimeFrame, TimeFrameUnit
-from loguru import logger
 import time
 import signal
+from pathlib import Path
 
-# Add parent directory to path for StatusTracker
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from status_tracker import StatusTracker
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/btc_combo_15m_claude.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger('BTC_COMBO_15M_CLAUDE')
+
+# Add project root to path for StatusTracker
+project_root = Path(__file__).resolve().parents[3]
+sys.path.append(str(project_root))
+
+try:
+    from grok.utils.status_tracker import StatusTracker
+except ImportError:
+    # Fallback: create a dummy StatusTracker if import fails
+    class StatusTracker:
+        def update_bot_status(self, bot_id, status):
+            logger.info(f"Status update: {status}")
+        def update_status(self, bot_id, status):
+            logger.info(f"Status update: {status}")
 
 class BTCComboClaudeBot:
     def __init__(self):

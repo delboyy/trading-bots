@@ -17,10 +17,11 @@ import os
 import sys
 import time
 import signal
+import logging
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from loguru import logger
+from pathlib import Path
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
@@ -28,13 +29,30 @@ from alpaca.data import CryptoHistoricalDataClient
 from alpaca.data.requests import CryptoBarsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from shared.status_tracker import StatusTracker
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/btc_combo_momentum_1d_claude.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger('BTC_COMBO_MOMENTUM_1D_CLAUDE')
 
-# Configure logger
-logger.remove()
-logger.add(sys.stdout, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{message}</cyan>", level="INFO")
-logger.add("logs/btc_combo_momentum_claude_{time}.log", rotation="1 day", retention="7 days")
+# Add project root to path for StatusTracker
+project_root = Path(__file__).resolve().parents[3]
+sys.path.append(str(project_root))
+
+try:
+    from grok.utils.status_tracker import StatusTracker
+except ImportError:
+    # Fallback: create a dummy StatusTracker if import fails
+    class StatusTracker:
+        def update_bot_status(self, bot_id, status):
+            logger.info(f"Status update: {status}")
+        def update_status(self, bot_id, status):
+            logger.info(f"Status update: {status}")
 
 # Global stop flag
 stop_flag = False
