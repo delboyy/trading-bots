@@ -177,7 +177,7 @@ class GLDFibonacciMomentumBot:
 
                 # Short signal: price above Fib with bearish momentum
                 elif current_price > fib_price and momentum < -0.002:
-                    logger.info(".3f"
+                    logger.info(f"Short signal: price {current_price:.3f} above Fib {fib_price:.3f}")
                     return -1  # Sell signal
 
         return 0  # No signal
