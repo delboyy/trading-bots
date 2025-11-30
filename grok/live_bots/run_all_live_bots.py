@@ -46,7 +46,11 @@ class LiveBotController:
             # Scalping bots (<1h timeframe)
             'btc_combo_15m': 'scalping/live_btc_combo_claude.py',
             'btc_combo_1d': 'scalping/live_btc_combo_momentum_claude.py',
-            'tsla_15m': 'scalping/live_tsla_15m_time_based_scalping.py'
+            'tsla_15m': 'scalping/live_tsla_15m_time_based_scalping.py',
+            # New bots
+            'gld_candlestick': 'scalping/live_gld_5m_candlestick_scalping.py',
+            'gld_fibonacci': 'scalping/live_gld_5m_fibonacci_momentum.py',
+            'googl_rsi': 'scalping/live_googl_15m_rsi_scalping.py',
         }
 
         self.bot_info = {

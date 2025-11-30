@@ -1,0 +1,104 @@
+{
+  "GOOGL_RSI_Aggressive": {
+    "config": {
+      "func": "<function rsi_aggressive_strategy at 0x107735f80>",
+      "symbol": "GOOGL",
+      "timeframe": "15mins",
+      "expected_return": 71.52
+    },
+    "market_regime": "sideways",
+    "regular_backtest": {
+      "total_return": 0,
+      "win_rate": 0,
+      "total_trades": 0,
+      "avg_trade_return": 0,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0,
+      "trades": "0 items",
+      "walk_forward_windows": 1
+    },
+    "walk_forward_backtest": {
+      "total_return": 0,
+      "win_rate": 0,
+      "total_trades": 0,
+      "avg_trade_return": 0,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0,
+      "trades": "0 items",
+      "walk_forward_windows": 80
+    },
+    "robustness_score": 1.0,
+    "overfitting_flags": [
+      "Poor risk-adjusted walk-forward returns"
+    ],
+    "recommendation": "REVIEW"
+  },
+  "GLD_Candlestick_Momentum": {
+    "config": {
+      "func": "<function candlestick_momentum_strategy at 0x10acc13a0>",
+      "symbol": "GLD",
+      "timeframe": "5mins",
+      "expected_return": 69.45
+    },
+    "market_regime": "sideways",
+    "regular_backtest": {
+      "total_return": 0,
+      "win_rate": 0,
+      "total_trades": 0,
+      "avg_trade_return": 0,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0,
+      "trades": "0 items",
+      "walk_forward_windows": 1
+    },
+    "walk_forward_backtest": {
+      "total_return": 0,
+      "win_rate": 0,
+      "total_trades": 0,
+      "avg_trade_return": 0,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0,
+      "trades": "0 items",
+      "walk_forward_windows": 240
+    },
+    "robustness_score": 1.0,
+    "overfitting_flags": [
+      "Poor risk-adjusted walk-forward returns"
+    ],
+    "recommendation": "REVIEW"
+  },
+  "GLD_Fibonacci_Momentum": {
+    "config": {
+      "func": "<function fibonacci_momentum_strategy at 0x110466d40>",
+      "symbol": "GLD",
+      "timeframe": "5mins",
+      "expected_return": 66.75
+    },
+    "market_regime": "sideways",
+    "regular_backtest": {
+      "total_return": 0,
+      "win_rate": 0,
+      "total_trades": 0,
+      "avg_trade_return": 0,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0,
+      "trades": "0 items",
+      "walk_forward_windows": 1
+    },
+    "walk_forward_backtest": {
+      "total_return": 0,
+      "win_rate": 0,
+      "total_trades": 0,
+      "avg_trade_return": 0,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0,
+      "trades": "0 items",
+      "walk_forward_windows": 240
+    },
+    "robustness_score": 1.0,
+    "overfitting_flags": [
+      "Poor risk-adjusted walk-forward returns"
+    ],
+    "recommendation": "REVIEW"
+  }
+}
