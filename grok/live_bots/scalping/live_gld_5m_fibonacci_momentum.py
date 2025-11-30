@@ -172,7 +172,7 @@ class GLDFibonacciMomentumBot:
             if price_distance < 0.003:
                 # Long signal: price below Fib with bullish momentum
                 if current_price < fib_price and momentum > 0.002:
-                    logger.info(".3f"
+                    logger.info(f"Long signal: price {current_price:.3f} below Fib {fib_price:.3f}")
                     return 1  # Buy signal
 
                 # Short signal: price above Fib with bearish momentum

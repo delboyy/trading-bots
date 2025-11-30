@@ -160,12 +160,12 @@ class GOOGLRSIScalpingBot:
 
         # Bullish signal: RSI crosses above oversold
         if prev_rsi <= self.rsi_oversold and current_rsi > self.rsi_oversold:
-            logger.info(".2f"
+            logger.info(f"RSI bullish signal: {current_rsi:.2f}")
             return 1  # Buy signal
 
         # Bearish signal: RSI crosses below overbought
         if prev_rsi >= self.rsi_overbought and current_rsi < self.rsi_overbought:
-            logger.info(".2f"
+            logger.info(f"RSI bearish signal: {current_rsi:.2f}")
             return -1  # Sell signal
 
         return 0  # No signal

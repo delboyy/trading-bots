@@ -252,16 +252,13 @@ class BTCComboMomentumBot:
             self.entry_price = signal['price']
             self.entry_bar = self.current_bar
             
-            self.tracker.update_status(
-                self.bot_id,
-                status="IN POSITION",
-                details={
-                    'entry_price': self.entry_price,
-                    'position_size': self.position,
-                    'tp_target': f"{self.take_profit*100:.1f}%",
-                    'sl_target': f"{self.stop_loss*100:.1f}%"
-                }
-            )
+            self.tracker.update_status(self.bot_id, {
+                'status': 'IN POSITION',
+                'entry_price': self.entry_price,
+                'position_size': self.position,
+                'tp_target': f"{self.take_profit*100:.1f}%",
+                'sl_target': f"{self.stop_loss*100:.1f}%"
+            })
 
             return True
 
@@ -302,15 +299,12 @@ class BTCComboMomentumBot:
                 if pnl > 0:
                     self.winning_trades += 1
 
-                self.tracker.update_status(
-                    self.bot_id,
-                    status="NO POSITION",
-                    details={
-                        'last_trade_pnl': f"{pnl*100:.2f}%",
-                        'total_trades': self.total_trades,
-                        'win_rate': f"{(self.winning_trades/self.total_trades)*100:.1f}%" if self.total_trades > 0 else "0%"
-                    }
-                )
+                self.tracker.update_status(self.bot_id, {
+                    'status': 'NO POSITION',
+                    'last_trade_pnl': f"{pnl*100:.2f}%",
+                    'total_trades': self.total_trades,
+                    'win_rate': f"{(self.winning_trades/self.total_trades)*100:.1f}%" if self.total_trades > 0 else "0%"
+                })
 
             self.position = 0
             self.entry_price = 0
@@ -326,11 +320,11 @@ class BTCComboMomentumBot:
         """Main strategy loop"""
         logger.info("🚀 Starting BTC Combo Momentum Strategy (Claude)...")
         
-        self.tracker.update_status(
-            self.bot_id,
-            status="STARTING",
-            details={'timeframe': f"{self.timeframe_minutes}m", 'strategy': 'Combo Momentum'}
-        )
+        self.tracker.update_status(self.bot_id, {
+            'status': 'STARTING',
+            'timeframe': f"{self.timeframe_minutes}m", 
+            'strategy': 'Combo Momentum'
+        })
 
         while not stop_flag:
             try:
