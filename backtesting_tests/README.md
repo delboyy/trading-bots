@@ -64,3 +64,4 @@ python focused_scalping_test.py
 2. **Strategy Optimization:** Combine OBV + Candlestick patterns
 3. **Risk Management:** Implement ATR-based stops and position sizing
 4. **Live Testing:** Deploy promising strategies (OBV QQQ 15m, Candlestick SPY 15m)
+

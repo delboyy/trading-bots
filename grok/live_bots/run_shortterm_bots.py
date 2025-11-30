@@ -37,41 +37,17 @@ class LiveBotController:
         # Get the directory where this script is located
         self.bot_dir = Path(__file__).resolve().parent
 
-        # Short-term bots (<1h timeframes)
+        # Short-term/Scalping bots (<1h timeframes) - located in scalping/ subdirectory
         self.bot_scripts = {
-            'eth_5m': 'live_eth_5m_fib_zigzag.py',
-            'btc_5m': 'live_btc_5m_fib_zigzag.py',
-            'nvda_5m_squeeze': 'live_nvda_5m_squeeze_pro.py',
-            'btc_15m_squeeze': 'live_btc_15m_squeeze_pro.py',
-            'btc_5m_scalp_z': 'live_btc_5m_scalp_z.py',
-            'nvda_15m_squeeze': 'live_nvda_15m_squeeze_pro.py',
-            'amd_5m_vol': 'live_amd_5m_volume_breakout.py',
-            'googl_15m_rsi': 'live_googl_15m_rsi_scalping.py',
-            'msft_5m_rsi': 'live_msft_5m_rsi_scalping.py',
-            'msft_5m_winner': 'live_msft_5m_rsi_winner.py',
-            'tsla_15m_time': 'live_tsla_15m_time_based_scalping.py',
-            'gld_5m_atr': 'live_gld_5m_atr_range_scalping.py',
-            'gld_5m_fib': 'live_gld_5m_fibonacci_momentum.py',
-            'gld_5m_session': 'live_gld_5m_session_momentum.py',
-            'btc_5m_vwap': 'live_btc_5m_vwap_range_aggressive.py'
+            'btc_combo': 'scalping/live_btc_combo_claude.py',
+            'btc_combo_momentum': 'scalping/live_btc_combo_momentum_claude.py',
+            'tsla_15m_time': 'scalping/live_tsla_15m_time_based_scalping.py'
         }
 
         self.bot_info = {
-            'eth_5m': {'name': 'ETH 5m Fib Zigzag', 'description': 'Scalper - 91% Win Rate'},
-            'btc_5m': {'name': 'BTC 5m Fib Zigzag', 'description': 'Scalper - 85% Win Rate'},
-            'nvda_5m_squeeze': {'name': 'NVDA 5m Squeeze-Pro', 'description': 'Scalper - 82% Return, 7.9% DD'},
-            'btc_15m_squeeze': {'name': 'BTC 15m Squeeze-Pro', 'description': 'Scalper - 30% Return, 8% DD'},
-            'btc_5m_scalp_z': {'name': 'BTC 5m Scalp-Z', 'description': 'Scalper - 66% Return, 13.5% DD'},
-            'nvda_15m_squeeze': {'name': 'NVDA 15m Squeeze-Pro', 'description': 'Scalper - 25% Return, 3.8% DD'},
-            'amd_5m_vol': {'name': 'AMD 5m Volume Breakout', 'description': 'Scalper - 13.75% Return, 66.7% Win Rate'},
-            'googl_15m_rsi': {'name': 'GOOGL 15m RSI Scalping', 'description': 'Scalper - 41.3% Return, 54% Win Rate'},
-            'msft_5m_rsi': {'name': 'MSFT 5m RSI Scalping', 'description': 'Scalper - 4% Return, 53.7% Win Rate'},
-            'msft_5m_winner': {'name': 'MSFT 5m RSI Winner', 'description': 'Scalper - Validated Winner Strategy'},
-            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'},
-            'gld_5m_atr': {'name': 'GLD 5m ATR Range', 'description': 'Scalper - 40.45% Return, 55.1% Win Rate'},
-            'gld_5m_fib': {'name': 'GLD 5m Fibonacci', 'description': 'Scalper - 57.43% Return, 64% Win Rate'},
-            'gld_5m_session': {'name': 'GLD 5m Session', 'description': 'Scalper - 54.52% Return, 45.5% Win Rate'},
-            'btc_5m_vwap': {'name': 'BTC 5m VWAP Range', 'description': 'Aggressive - 1%+ Daily Target'}
+            'btc_combo': {'name': 'BTC Combo Strategy (Claude)', 'description': 'Multi-indicator scalper'},
+            'btc_combo_momentum': {'name': 'BTC Combo Momentum (Claude)', 'description': 'Momentum-based scalper'},
+            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'}
         }
 
     def check_environment(self) -> bool:

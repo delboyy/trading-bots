@@ -37,70 +37,45 @@ class LiveBotController:
         # Get the directory where this script is located
         self.bot_dir = Path(__file__).resolve().parent
 
+        # All bots - 6 VALIDATED WINNERS ONLY
         self.bot_scripts = {
-            'eth_1h': 'live_eth_1h_volatility_breakout.py',
-            'slv_4h': 'live_slv_4h_mean_reversion.py',
-            'gld_4h': 'live_gld_4h_mean_reversion.py',
-            'nvda_1h': 'live_nvda_1h_volatility_breakout.py',
-            'eth_4h': 'live_eth_4h_volatility_breakout.py',
-            'tsla_4h': 'live_tsla_4h_volatility_breakout.py',
-            'nq_4h': 'live_nq_4h_volatility_breakout.py',
-            'btc_1h': 'live_btc_1h_volatility_breakout.py',
-            'btc_5m_vwap': 'live_btc_5m_vwap_range_aggressive.py',
-            'meta_1h': 'live_meta_1h_volatility_breakout.py',
-            'xlk_1h': 'live_xlk_1h_volatility_breakout.py',
-            'eth_5m': 'live_eth_5m_fib_zigzag.py',
-            'btc_5m': 'live_btc_5m_fib_zigzag.py',
-            'tsla_4h_le': 'live_tsla_4h_fib_local_extrema.py',
-            'eth_1d': 'live_eth_1d_volatility_breakout.py',
-            'tsla_1d': 'live_tsla_1d_volatility_breakout.py',
-            'nvda_1d': 'live_nvda_1d_volatility_breakout.py',
-            'spy_1d': 'live_spy_1d_volatility_breakout.py',
-            'nvda_5m_squeeze': 'live_nvda_5m_squeeze_pro.py',
-            'btc_15m_squeeze': 'live_btc_15m_squeeze_pro.py',
-            'btc_5m_scalp_z': 'live_btc_5m_scalp_z.py',
-            'nvda_15m_squeeze': 'live_nvda_15m_squeeze_pro.py',
-            'amd_5m_vol': 'live_amd_5m_volume_breakout.py',
-            'googl_15m_rsi': 'live_googl_15m_rsi_scalping.py',
-            'msft_5m_rsi': 'live_msft_5m_rsi_scalping.py',
-            'msft_5m_winner': 'live_msft_5m_rsi_winner.py',
-            'tsla_15m_time': 'live_tsla_15m_time_based_scalping.py',
-            'gld_5m_atr': 'live_gld_5m_atr_range_scalping.py',
-            'gld_5m_fib': 'live_gld_5m_fibonacci_momentum.py',
-            'gld_5m_session': 'live_gld_5m_session_momentum.py'
+            # Long-term bots (>=1h timeframe)
+            'eth_1h': 'long_term/live_eth_1h_volatility_breakout_claude.py',
+            'eth_4h': 'long_term/live_eth_4h_volatility_breakout_claude.py',
+            'nvda_1h': 'long_term/live_nvda_1h_volatility_breakout_claude.py',
+            # Scalping bots (<1h timeframe)
+            'btc_combo_15m': 'scalping/live_btc_combo_claude.py',
+            'btc_combo_1d': 'scalping/live_btc_combo_momentum_claude.py',
+            'tsla_15m': 'scalping/live_tsla_15m_time_based_scalping.py'
         }
 
         self.bot_info = {
-            'eth_1h': {'name': 'ETH 1h Volatility Breakout', 'description': 'Champion strategy - 181% returns'},
-            'slv_4h': {'name': 'SLV 4h Mean Reversion', 'description': 'Perfect balance - 70% returns, 9% DD'},
-            'gld_4h': {'name': 'GLD 4h Mean Reversion', 'description': 'Ultra-safe - 39% returns, 100% win rate'},
-            'nvda_1h': {'name': 'NVDA 1h Volatility Breakout', 'description': 'Tech leader - 109% returns'},
-            'eth_4h': {'name': 'ETH 4h Volatility Breakout', 'description': 'Conservative ETH - 148% returns'},
-            'tsla_4h': {'name': 'TSLA 4h Volatility Breakout', 'description': 'Stock champion - 59% returns'},
-            'nq_4h': {'name': 'NQ 4h Volatility Breakout', 'description': 'Futures winner - 33% returns'},
-            'btc_1h': {'name': 'BTC 1h Volatility Breakout', 'description': 'Crypto steady - 45% returns'},
-            'meta_1h': {'name': 'META 1h Volatility Breakout', 'description': 'Social media - 29% returns'},
-            'xlk_1h': {'name': 'XLK 1h Volatility Breakout', 'description': 'Tech sector - 24% returns'},
-            'eth_5m': {'name': 'ETH 5m Fib Zigzag', 'description': 'Scalper - 91% Win Rate'},
-            'btc_5m': {'name': 'BTC 5m Fib Zigzag', 'description': 'Scalper - 85% Win Rate'},
-            'tsla_4h_le': {'name': 'TSLA 4h Fib Local Extrema', 'description': 'Swing - 100% Win Rate'},
-            'eth_1d': {'name': 'ETH 1d Volatility Breakout', 'description': 'Daily Swing - 154% Return'},
-            'tsla_1d': {'name': 'TSLA 1d Volatility Breakout', 'description': 'Daily Swing - 144% Return'},
-            'nvda_1d': {'name': 'NVDA 1d Volatility Breakout', 'description': 'Daily Swing - 143% Return'},
-            'spy_1d': {'name': 'SPY 1d Volatility Breakout', 'description': 'Daily Swing - 75% Win Rate'},
-            'nvda_5m_squeeze': {'name': 'NVDA 5m Squeeze-Pro', 'description': 'Scalper - 82% Return, 7.9% DD'},
-            'btc_15m_squeeze': {'name': 'BTC 15m Squeeze-Pro', 'description': 'Scalper - 30% Return, 8% DD'},
-            'btc_5m_scalp_z': {'name': 'BTC 5m Scalp-Z', 'description': 'Scalper - 66% Return, 13.5% DD'},
-            'nvda_15m_squeeze': {'name': 'NVDA 15m Squeeze-Pro', 'description': 'Scalper - 25% Return, 3.8% DD'},
-            'amd_5m_vol': {'name': 'AMD 5m Volume Breakout', 'description': 'Scalper - 13.75% Return, 66.7% Win Rate'},
-            'googl_15m_rsi': {'name': 'GOOGL 15m RSI Scalping', 'description': 'Scalper - 41.3% Return, 54% Win Rate'},
-            'msft_5m_rsi': {'name': 'MSFT 5m RSI Scalping', 'description': 'Scalper - 4% Return, 53.7% Win Rate'},
-            'msft_5m_winner': {'name': 'MSFT 5m RSI Winner', 'description': 'Scalper - Validated Winner Strategy'},
-            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'},
-            'gld_5m_atr': {'name': 'GLD 5m ATR Range', 'description': 'Scalper - 40.45% Return, 55.1% Win Rate'},
-            'gld_5m_fib': {'name': 'GLD 5m Fibonacci', 'description': 'Scalper - 57.43% Return, 64% Win Rate'},
-            'gld_5m_session': {'name': 'GLD 5m Session', 'description': 'Scalper - 54.52% Return, 45.5% Win Rate'},
-            'btc_5m_vwap': {'name': 'BTC 5m VWAP Range', 'description': 'Aggressive - 1%+ Daily Target'}
+            # Long-term bots (>=1h)
+            'eth_1h': {
+                'name': 'ETH 1h Volatility (Claude)', 
+                'description': '🏆 TOP: 0.248%/day, 142% annual, 2yr validated'
+            },
+            'eth_4h': {
+                'name': 'ETH 4h Volatility (Claude)', 
+                'description': '🥇 EXCELLENT: 0.203%/day, 107% annual, 2yr validated'
+            },
+            'nvda_1h': {
+                'name': 'NVDA 1h Volatility (Claude)', 
+                'description': '✅ SOLID: 0.149%/day, 72% annual, 2yr validated'
+            },
+            # Scalping bots (<1h)
+            'btc_combo_15m': {
+                'name': 'BTC Combo 15m (Claude)', 
+                'description': '🏆 TOP: 0.247%/day, 141% annual, 60d validated'
+            },
+            'btc_combo_1d': {
+                'name': 'BTC Combo Momentum 1d (Claude)', 
+                'description': '✅ KEEPER: 0.161%/day, 48% annual, 2yr validated'
+            },
+            'tsla_15m': {
+                'name': 'TSLA 15m Time-Based', 
+                'description': '✅ SOLID: 0.160%/day, 79% annual, 2yr validated'
+            }
         }
 
     def check_environment(self) -> bool:

@@ -278,3 +278,4 @@ tail -f logs/gld_fibonacci_momentum_$(date +%Y%m%d).log
 *Strategy locked down on: November 26, 2025*
 *Data source: IBKR historical data (2023-2025)*
 *Testing period: 2 years, 39,912 data points*
+
