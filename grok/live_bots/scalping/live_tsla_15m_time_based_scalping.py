@@ -24,7 +24,15 @@ from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 # from shared_utils.logger import setup_logger
 # from shared_strategies.scalping_strategy import ScalpingStrategy
 
-from grok.utils.status_tracker import StatusTracker
+try:
+    from grok.utils.status_tracker import StatusTracker
+except ImportError:
+    # Fallback: create a dummy StatusTracker if import fails
+    class StatusTracker:
+        def update_status(self, bot_id, status):
+            print(f"Status update: {status}")
+        def update_bot_status(self, bot_id, status):
+            print(f"Status update: {status}")
 
 # Setup logging
 logging.basicConfig(

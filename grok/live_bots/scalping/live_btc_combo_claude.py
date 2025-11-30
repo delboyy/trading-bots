@@ -42,7 +42,7 @@ try:
 except ImportError:
     # Fallback: create a dummy StatusTracker if import fails
     class StatusTracker:
-        def update_bot_status(self, bot_id, status):
+        def update_status(self, bot_id, status):
             logger.info(f"Status update: {status}")
         def update_status(self, bot_id, status):
             logger.info(f"Status update: {status}")
@@ -267,7 +267,7 @@ class BTCComboClaudeBot:
             logger.info(f"🛑 SL order placed @ ${sl_price:,.2f}")
             
             # Update tracker
-            self.tracker.update_bot_status(self.bot_id, {
+            self.tracker.update_status(self.bot_id, {
                 'in_position': True,
                 'entry_price': current_price,
                 'position_size': position_size,
@@ -322,7 +322,7 @@ class BTCComboClaudeBot:
             self.current_capital += pnl
             
             # Update tracker
-            self.tracker.update_bot_status(self.bot_id, {
+            self.tracker.update_status(self.bot_id, {
                 'in_position': False,
                 'last_pnl': pnl,
                 'last_pnl_pct': pnl_pct,
@@ -346,7 +346,7 @@ class BTCComboClaudeBot:
         logger.info(f"🤖 Starting BTC Combo Claude Bot ({self.timeframe_minutes}m)")
         
         # Initialize tracker
-        self.tracker.update_bot_status(self.bot_id, {
+        self.tracker.update_status(self.bot_id, {
             'name': f'BTC Combo Claude {self.timeframe_minutes}m',
             'strategy': 'Momentum + Volume + Session Filter',
             'status': 'running',
@@ -380,7 +380,7 @@ class BTCComboClaudeBot:
                         self.place_exit_order(current_price, reason)
                 
                 # Update tracker
-                self.tracker.update_bot_status(self.bot_id, {
+                self.tracker.update_status(self.bot_id, {
                     'last_update': datetime.now().isoformat(),
                     'current_price': current_price,
                     'status': 'running'

@@ -19,7 +19,15 @@ import schedule
 
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from grok.utils.status_tracker import StatusTracker
+try:
+    from grok.utils.status_tracker import StatusTracker
+except ImportError:
+    # Fallback: create a dummy StatusTracker if import fails
+    class StatusTracker:
+        def update_status(self, bot_id, status):
+            print(f"Status update: {status}")
+        def update_bot_status(self, bot_id, status):
+            print(f"Status update: {status}")
 
 # Setup logging
 logging.basicConfig(

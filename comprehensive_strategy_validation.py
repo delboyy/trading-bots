@@ -62,8 +62,10 @@ def load_stock_data(symbol: str, timeframe: str) -> pd.DataFrame:
         df.set_index('date', inplace=True)
 
         # Filter to 2023-2025 data
-        df = df[df.index >= '2023-01-01']
-        df = df[df.index <= '2025-12-31']
+        start_date = pd.Timestamp('2023-01-01').tz_localize(df.index.tz)
+        end_date = pd.Timestamp('2025-12-31').tz_localize(df.index.tz)
+        df = df[df.index >= start_date]
+        df = df[df.index <= end_date]
 
         # Rename columns to standard format
         df.columns = [col.capitalize() for col in df.columns]
@@ -87,8 +89,10 @@ def load_crypto_data(symbol: str, timeframe: str) -> pd.DataFrame:
         df = pd.read_parquet(base_path)
 
         # Filter to 2023-2025 data
-        df = df[df.index >= '2023-01-01']
-        df = df[df.index <= '2025-12-31']
+        start_date = pd.Timestamp('2023-01-01').tz_localize(df.index.tz)
+        end_date = pd.Timestamp('2025-12-31').tz_localize(df.index.tz)
+        df = df[df.index >= start_date]
+        df = df[df.index <= end_date]
 
         # Ensure proper column names
         rename_dict = {}
