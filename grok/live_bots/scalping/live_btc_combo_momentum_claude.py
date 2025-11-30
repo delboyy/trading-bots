@@ -80,8 +80,8 @@ class BTCComboMomentumBot:
         if not all([self.api_key, self.api_secret]):
             raise ValueError("Missing Alpaca API credentials")
 
-        self.trading_client = TradingClient(self.api_key, self.api_secret, paper=True)
-        self.data_client = CryptoHistoricalDataClient()
+        # Use standard alpaca-trade-api
+        self.api = REST(self.api_key, self.api_secret, base_url='https://paper-api.alpaca.markets')
 
         # Trading parameters
         self.symbol = 'BTC/USD'
@@ -118,7 +118,7 @@ class BTCComboMomentumBot:
     def get_account_info(self):
         """Get account information"""
         try:
-            account = self.trading_client.get_account()
+            account = self.api.get_account()
             return {
                 'equity': float(account.equity),
                 'cash': float(account.cash),
@@ -129,24 +129,26 @@ class BTCComboMomentumBot:
             return None
 
     def get_historical_data(self, limit=100):
-        """Get historical crypto bars"""
+        """Get historical crypto bars using standard alpaca-trade-api"""
         try:
-            request = CryptoBarsRequest(
-                symbol_or_symbols=self.symbol,
-                timeframe=self.timeframe,
+            # Use standard alpaca-trade-api for crypto data
+            bars = self.api.get_crypto_bars(
+                self.symbol,
+                self.timeframe,
                 limit=limit
-            )
-            bars = self.data_client.get_crypto_bars(request)
+            ).df
             
-            if self.symbol in bars.data:
-                df = pd.DataFrame([{
-                    'timestamp': bar.timestamp,
-                    'open': bar.open,
-                    'high': bar.high,
-                    'low': bar.low,
-                    'close': bar.close,
-                    'volume': bar.volume
-                } for bar in bars.data[self.symbol]])
+            if not bars.empty:
+                # Rename columns to match expected format
+                df = bars.rename(columns={
+                    'open': 'Open',
+                    'high': 'High', 
+                    'low': 'Low',
+                    'close': 'Close',
+                    'volume': 'Volume'
+                }).copy()
+                df.reset_index(inplace=True)
+                df.rename(columns={'timestamp': 'Time'}, inplace=True)
                 
                 df.set_index('timestamp', inplace=True)
                 return df
@@ -234,13 +236,13 @@ class BTCComboMomentumBot:
                 logger.warning(f"Position size too small: {position_size}")
                 return False
 
-            order = self.trading_client.submit_order(
-                MarketOrderRequest(
-                    symbol=self.symbol,
-                    qty=position_size,
-                    side=OrderSide.BUY,
-                    time_in_force=TimeInForce.GTC
-                )
+            order = self.api.submit_order(
+                symbol=self.symbol,
+                qty=position_size,
+                side='buy',
+                type='limit',
+                limit_price=round(current_price * 0.9995, 2),  # Limit order for 0.01% fee
+                time_in_force='gtc'
             )
 
             logger.info(f"✅ Entry order placed: {position_size:.8f} BTC @ ${signal['price']:.2f}")
@@ -273,13 +275,13 @@ class BTCComboMomentumBot:
             if self.position == 0:
                 return False
 
-            order = self.trading_client.submit_order(
-                MarketOrderRequest(
-                    symbol=self.symbol,
-                    qty=self.position,
-                    side=OrderSide.SELL,
-                    time_in_force=TimeInForce.GTC
-                )
+            order = self.api.submit_order(
+                symbol=self.symbol,
+                qty=self.position,
+                side='sell',
+                type='limit',
+                limit_price=round(current_price * 1.0005, 2),  # Limit order for 0.01% fee
+                time_in_force='gtc'
             )
 
             df = self.get_historical_data(limit=5)

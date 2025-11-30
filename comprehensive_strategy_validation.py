@@ -58,14 +58,12 @@ def load_stock_data(symbol: str, timeframe: str) -> pd.DataFrame:
 
     try:
         df = pd.read_csv(file_path)
-        df['date'] = pd.to_datetime(df['date'])
+        df['date'] = pd.to_datetime(df['date'], utc=True)
         df.set_index('date', inplace=True)
 
         # Filter to 2023-2025 data
-        start_date = pd.Timestamp('2023-01-01').tz_localize(df.index.tz)
-        end_date = pd.Timestamp('2025-12-31').tz_localize(df.index.tz)
-        df = df[df.index >= start_date]
-        df = df[df.index <= end_date]
+        df = df[df.index >= '2023-01-01']
+        df = df[df.index <= '2025-12-31']
 
         # Rename columns to standard format
         df.columns = [col.capitalize() for col in df.columns]
@@ -414,6 +412,288 @@ class RSIScalpingStrategy(BaseStrategy):
         super().enter_position(price, timestamp, direction)
         self.bars_held = 0
 
+class VolumeBreakoutStrategy(BaseStrategy):
+    """Volume Breakout Strategy from Master Doc"""
+
+    def __init__(self, symbol: str, timeframe: str, volume_multiplier: float = 1.8,
+                 breakout_threshold: float = 0.005, take_profit_pct: float = 0.02,
+                 stop_loss_pct: float = 0.01, min_volume_period: int = 20):
+        super().__init__("Volume Breakout", symbol, timeframe)
+        self.volume_multiplier = volume_multiplier
+        self.breakout_threshold = breakout_threshold
+        self.take_profit_pct = take_profit_pct
+        self.stop_loss_pct = stop_loss_pct
+        self.min_volume_period = min_volume_period
+
+    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        # Calculate average volume
+        df['avg_volume'] = df['Volume'].rolling(self.min_volume_period).mean()
+        return df
+
+    def check_entry_conditions(self, df: pd.DataFrame, i: int) -> Optional[str]:
+        if i < self.min_volume_period:
+            return None
+
+        current_price = df['Close'].iloc[i]
+        current_volume = df['Volume'].iloc[i]
+        avg_volume = df['avg_volume'].iloc[i]
+
+        # Volume spike condition
+        volume_spike = current_volume > (avg_volume * self.volume_multiplier)
+
+        if not volume_spike:
+            return None
+
+        # Price breakout conditions
+        if i >= 10:  # Need some history for breakout detection
+            recent_high = df['High'].tail(10).max()
+            recent_low = df['Low'].tail(10).min()
+
+            # Bullish breakout
+            if current_price > recent_high * (1 + self.breakout_threshold):
+                return 'buy'
+
+            # Bearish breakdown
+            if current_price < recent_low * (1 - self.breakout_threshold):
+                return 'sell'
+
+        return None
+
+    def check_exit_conditions(self, df: pd.DataFrame, i: int) -> bool:
+        if self.position == 0:
+            return False
+
+        current_price = df['Close'].iloc[i]
+        entry_price = self.entry_price
+
+        # Profit target and stop loss
+        if self.position == 1:  # Long position
+            if current_price >= entry_price * (1 + self.take_profit_pct):
+                return True
+            if current_price <= entry_price * (1 - self.stop_loss_pct):
+                return True
+        else:  # Short position
+            if current_price <= entry_price * (1 - self.take_profit_pct):
+                return True
+            if current_price >= entry_price * (1 + self.stop_loss_pct):
+                return True
+
+        return False
+
+class CandlestickScalpingStrategy(BaseStrategy):
+    """Candlestick Scalping Strategy from Master Doc"""
+
+    def __init__(self, symbol: str, timeframe: str, volume_multiplier: float = 1.4,
+                 take_profit_pct: float = 0.015, stop_loss_pct: float = 0.007,
+                 max_hold_bars: int = 6):
+        super().__init__("Candlestick Scalping", symbol, timeframe)
+        self.volume_multiplier = volume_multiplier
+        self.take_profit_pct = take_profit_pct
+        self.stop_loss_pct = stop_loss_pct
+        self.max_hold_bars = max_hold_bars
+        self.bars_held = 0
+
+    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        # Volume average for confirmation
+        df['avg_volume'] = df['Volume'].rolling(20).mean()
+        return df
+
+    def detect_candlestick_patterns(self, df: pd.DataFrame, i: int) -> Optional[str]:
+        """Detect basic candlestick patterns"""
+        if i < 5:  # Need some history
+            return None
+
+        # Current candle
+        current = df.iloc[i]
+        prev1 = df.iloc[i-1]
+
+        open_price = current['Open']
+        high_price = current['High']
+        low_price = current['Low']
+        close_price = current['Close']
+
+        body_size = abs(close_price - open_price)
+        total_range = high_price - low_price
+
+        if total_range == 0:
+            return None
+
+        body_ratio = body_size / total_range
+        upper_shadow = high_price - max(open_price, close_price)
+        lower_shadow = min(open_price, close_price) - low_price
+
+        # Volume confirmation
+        current_volume = current['Volume']
+        avg_volume = df['avg_volume'].iloc[i]
+        volume_confirmed = current_volume > avg_volume * self.volume_multiplier
+
+        if not volume_confirmed:
+            return None
+
+        # Hammer pattern (small body, long lower wick)
+        if (body_ratio < 0.3 and lower_shadow > body_size * 2 and
+            upper_shadow < body_size and close_price > open_price):
+            return 'hammer'  # Bullish reversal
+
+        # Shooting star (small body, long upper wick)
+        if (body_ratio < 0.3 and upper_shadow > body_size * 2 and
+            lower_shadow < body_size and close_price < open_price):
+            return 'shooting_star'  # Bearish reversal
+
+        # Engulfing patterns
+        prev_body_high = max(prev1['Open'], prev1['Close'])
+        prev_body_low = min(prev1['Open'], prev1['Close'])
+
+        # Bullish engulfing
+        if (close_price > open_price and prev1['Close'] < prev1['Open'] and
+            close_price >= prev_body_high and open_price <= prev_body_low):
+            return 'bullish_engulfing'
+
+        # Bearish engulfing
+        if (close_price < open_price and prev1['Close'] > prev1['Open'] and
+            open_price >= prev_body_high and close_price <= prev_body_low):
+            return 'bearish_engulfing'
+
+        return None
+
+    def check_entry_conditions(self, df: pd.DataFrame, i: int) -> Optional[str]:
+        pattern = self.detect_candlestick_patterns(df, i)
+
+        if pattern == 'hammer':
+            return 'buy'
+        elif pattern == 'shooting_star':
+            return 'sell'
+        elif pattern == 'bullish_engulfing':
+            return 'buy'
+        elif pattern == 'bearish_engulfing':
+            return 'sell'
+
+        return None
+
+    def check_exit_conditions(self, df: pd.DataFrame, i: int) -> bool:
+        if self.position == 0:
+            return False
+
+        current_price = df['Close'].iloc[i]
+        entry_price = self.entry_price
+
+        # Profit target and stop loss
+        if self.position == 1:  # Long position
+            if current_price >= entry_price * (1 + self.take_profit_pct):
+                return True
+            if current_price <= entry_price * (1 - self.stop_loss_pct):
+                return True
+        else:  # Short position
+            if current_price <= entry_price * (1 - self.take_profit_pct):
+                return True
+            if current_price >= entry_price * (1 + self.stop_loss_pct):
+                return True
+
+        # Max hold time
+        self.bars_held += 1
+        if self.bars_held >= self.max_hold_bars:
+            return True
+
+        return False
+
+    def enter_position(self, price: float, timestamp, direction: str):
+        super().enter_position(price, timestamp, direction)
+        self.bars_held = 0
+
+class FibonacciMomentumStrategy(BaseStrategy):
+    """Fibonacci Momentum Strategy from Master Doc"""
+
+    def __init__(self, symbol: str, timeframe: str, fib_levels: List[float] = [0.236, 0.382, 0.618, 0.786],
+                 momentum_period: int = 6, volume_multiplier: float = 1.5,
+                 take_profit_pct: float = 0.016, stop_loss_pct: float = 0.009,
+                 max_hold_time: int = 12):
+        super().__init__("Fibonacci Momentum", symbol, timeframe)
+        self.fib_levels = fib_levels
+        self.momentum_period = momentum_period
+        self.volume_multiplier = volume_multiplier
+        self.take_profit_pct = take_profit_pct
+        self.stop_loss_pct = stop_loss_pct
+        self.max_hold_time = max_hold_time
+        self.bars_held = 0
+
+    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        # Calculate Fibonacci retracement levels
+        recent_high = df['High'].rolling(50).max()
+        recent_low = df['Low'].rolling(50).min()
+
+        for level in self.fib_levels:
+            df[f'fib_{level}'] = recent_low + (recent_high - recent_low) * level
+
+        # Momentum
+        df['momentum'] = df['Close'] - df['Close'].shift(self.momentum_period)
+
+        # Volume average
+        df['avg_volume'] = df['Volume'].rolling(20).mean()
+
+        return df
+
+    def check_entry_conditions(self, df: pd.DataFrame, i: int) -> Optional[str]:
+        if i < self.momentum_period:
+            return None
+
+        current_price = df['Close'].iloc[i]
+        momentum = df['momentum'].iloc[i]
+        current_volume = df['Volume'].iloc[i]
+        avg_volume = df['avg_volume'].iloc[i]
+
+        # Volume confirmation
+        if current_volume < avg_volume * self.volume_multiplier:
+            return None
+
+        # Check Fibonacci levels
+        for level in self.fib_levels:
+            fib_price = df[f'fib_{level}'].iloc[i]
+            price_distance = abs(current_price - fib_price) / current_price
+
+            # Near Fibonacci level (within 0.3% tolerance)
+            if price_distance < 0.003:
+                # Long signal: price below Fib with bullish momentum
+                if current_price < fib_price and momentum > 0.002:
+                    return 'buy'
+                # Short signal: price above Fib with bearish momentum
+                elif current_price > fib_price and momentum < -0.002:
+                    return 'sell'
+
+        return None
+
+    def check_exit_conditions(self, df: pd.DataFrame, i: int) -> bool:
+        if self.position == 0:
+            return False
+
+        current_price = df['Close'].iloc[i]
+        entry_price = self.entry_price
+
+        # Profit target
+        if self.position == 1:  # Long position
+            if current_price >= entry_price * (1 + self.take_profit_pct):
+                return True
+            if current_price <= entry_price * (1 - self.stop_loss_pct):
+                return True
+        else:  # Short position
+            if current_price <= entry_price * (1 - self.take_profit_pct):
+                return True
+            if current_price >= entry_price * (1 + self.stop_loss_pct):
+                return True
+
+        # Max hold time
+        self.bars_held += 1
+        if self.bars_held >= self.max_hold_time:
+            return True
+
+        return False
+
+    def enter_position(self, price: float, timestamp, direction: str):
+        super().enter_position(price, timestamp, direction)
+        self.bars_held = 0
+
 # ===============================
 # MAIN VALIDATION FUNCTION
 # ===============================
@@ -465,7 +745,18 @@ def validate_all_strategies():
     logger.info("🔍 Validating Volume Breakout Strategies...")
 
     # AMD Volume Breakout 5m (1.8x VOLUME)
-    # Note: Need to implement VolumeBreakoutStrategy class
+    strategy = VolumeBreakoutStrategy("AMD", "5mins", volume_multiplier=1.8)
+    df = load_stock_data("AMD", "5mins")
+    results['AMD_VolumeBreakout_5m_1_8x'] = strategy.run_backtest(df)
+
+    # AMD Volume Breakout 5m (2.0x VOLUME)
+    strategy = VolumeBreakoutStrategy("AMD", "5mins", volume_multiplier=2.0)
+    results['AMD_VolumeBreakout_5m_2_0x'] = strategy.run_backtest(df)
+
+    # MSFT Volume Breakout 15m
+    strategy = VolumeBreakoutStrategy("MSFT", "15mins", volume_multiplier=1.5)
+    df = load_stock_data("MSFT", "15mins")
+    results['MSFT_VolumeBreakout_15m'] = strategy.run_backtest(df)
 
     # ===============================
     # CANDLESTICK SCALPING STRATEGIES
@@ -474,7 +765,24 @@ def validate_all_strategies():
     logger.info("🔍 Validating Candlestick Strategies...")
 
     # GLD Candlestick 5m (VOLUME 1.4x) - BEST CANDLESTICK
-    # Note: Need to implement CandlestickStrategy class
+    strategy = CandlestickScalpingStrategy("GLD", "5mins", volume_multiplier=1.4)
+    df = load_stock_data("GLD", "5mins")
+    results['GLD_Candlestick_5m_Vol1_4x'] = strategy.run_backtest(df)
+
+    # DIA Candlestick 5m (DEFAULT)
+    strategy = CandlestickScalpingStrategy("DIA", "5mins", volume_multiplier=1.2)
+    df = load_stock_data("DIA", "5mins")
+    results['DIA_Candlestick_5m_Default'] = strategy.run_backtest(df)
+
+    # MSFT Candlestick 15m
+    strategy = CandlestickScalpingStrategy("MSFT", "15mins", volume_multiplier=1.2)
+    df = load_stock_data("MSFT", "15mins")
+    results['MSFT_Candlestick_15m'] = strategy.run_backtest(df)
+
+    # SPY Candlestick 5m
+    strategy = CandlestickScalpingStrategy("SPY", "5mins", volume_multiplier=1.2)
+    df = load_stock_data("SPY", "5mins")
+    results['SPY_Candlestick_5m'] = strategy.run_backtest(df)
 
     # ===============================
     # FIBONACCI MOMENTUM STRATEGIES
@@ -483,7 +791,9 @@ def validate_all_strategies():
     logger.info("🔍 Validating Fibonacci Momentum Strategies...")
 
     # GLD Fibonacci Momentum 5m - TOP GLD PERFORMER
-    # Note: Need to implement FibonacciMomentumStrategy class
+    strategy = FibonacciMomentumStrategy("GLD", "5mins")
+    df = load_stock_data("GLD", "5mins")
+    results['GLD_Fibonacci_Momentum_5m'] = strategy.run_backtest(df)
 
     # ===============================
     # SESSION MOMENTUM STRATEGIES
