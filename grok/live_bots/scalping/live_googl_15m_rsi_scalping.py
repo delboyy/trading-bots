@@ -205,7 +205,7 @@ class GOOGLRSIScalpingBot:
                             time_in_force='gtc'
                         )
                         logger.info(f"BUY ORDER: {qty} shares of {self.symbol} at market")
-                        self.tracker.update_bot_status(self.bot_id, f"BUY {qty} shares")
+                        self.tracker.update_status(self.bot_id, f"BUY {qty} shares")
 
                         # Set stop loss and take profit
                         self.set_stop_loss_take_profit(order.id, qty, 'buy')
@@ -237,7 +237,7 @@ class GOOGLRSIScalpingBot:
                             time_in_force='gtc'
                         )
                         logger.info(f"SELL ORDER: {qty} shares of {self.symbol} at market")
-                        self.tracker.update_bot_status(self.bot_id, f"SELL {qty} shares")
+                        self.tracker.update_status(self.bot_id, f"SELL {qty} shares")
 
                         # Set stop loss and take profit
                         self.set_stop_loss_take_profit(order.id, qty, 'sell')
@@ -334,7 +334,7 @@ class GOOGLRSIScalpingBot:
     def run(self):
         """Main bot loop"""
         logger.info("🎯 Starting GOOGL RSI Aggressive Scalping Bot")
-        self.tracker.update_bot_status(self.bot_id, "STARTED")
+        self.tracker.update_status(self.bot_id, "STARTED")
 
         while True:
             try:
@@ -366,7 +366,7 @@ class GOOGLRSIScalpingBot:
                 # Check daily drawdown
                 if self.check_daily_drawdown():
                     logger.warning("Daily drawdown limit reached, stopping for today")
-                    self.tracker.update_bot_status(self.bot_id, "DAILY_DD_LIMIT")
+                    self.tracker.update_status(self.bot_id, "DAILY_DD_LIMIT")
                     time.sleep(3600)  # Sleep 1 hour
                     continue
 
@@ -387,14 +387,14 @@ class GOOGLRSIScalpingBot:
 
                 # Update status
                 position_qty = self.get_current_position()
-                self.tracker.update_bot_status(self.bot_id, f"RUNNING - Position: {position_qty}")
+                self.tracker.update_status(self.bot_id, f"RUNNING - Position: {position_qty}")
 
                 # Sleep before next iteration (15-minute intervals)
                 time.sleep(900)  # 15 minutes
 
             except Exception as e:
                 logger.error(f"Error in main loop: {e}")
-                self.tracker.update_bot_status(self.bot_id, f"ERROR: {str(e)}")
+                self.tracker.update_status(self.bot_id, f"ERROR: {str(e)}")
                 time.sleep(60)
 
 if __name__ == "__main__":

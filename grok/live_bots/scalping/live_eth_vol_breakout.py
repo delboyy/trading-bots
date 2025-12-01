@@ -78,7 +78,7 @@ class ETHVolBreakoutBot:
         
         # Strategy Parameters (from backtesting)
         self.timeframe_minutes = 60  # 1h
-        self.timeframe = TimeFrame(self.timeframe_minutes, TimeFrameUnit.Minute)
+        self.timeframe = TimeFrame(1, TimeFrameUnit.Hour)  # Use Hour unit for 60 minutes
         
         # Z-Score Parameters
         self.z_window = 20
