@@ -39,6 +39,8 @@ logger = logging.getLogger('BTC_COMBO_MOMENTUM_1D_CLAUDE')
 project_root = Path(__file__).resolve().parents[3]
 sys.path.append(str(project_root))
 
+from grok.utils.position_sizing import calculate_position_size
+
 try:
     from grok.utils.status_tracker import StatusTracker
 except ImportError:
@@ -231,8 +233,15 @@ class BTCComboMomentumBot:
     def place_entry_order(self, signal, account_info):
         """Place entry order"""
         try:
-            cash = account_info['cash'] * 0.95
-            position_size = cash / signal['price']
+            # Calculate position size (use centralized risk management)
+            equity = account_info['equity']
+            
+            position_size = calculate_position_size(
+                bot_id=self.bot_id,
+                account_equity=equity,
+                entry_price=signal['price']
+            )
+            
             position_size = round(position_size, 8)
 
             if position_size < 0.0001:

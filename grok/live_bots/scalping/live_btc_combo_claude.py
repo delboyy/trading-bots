@@ -37,6 +37,8 @@ logger = logging.getLogger('BTC_COMBO_15M_CLAUDE')
 project_root = Path(__file__).resolve().parents[3]
 sys.path.append(str(project_root))
 
+from grok.utils.position_sizing import calculate_position_size
+
 try:
     from grok.utils.status_tracker import StatusTracker
 except ImportError:
@@ -208,10 +210,16 @@ class BTCComboClaudeBot:
     def place_entry_order(self, current_price):
         """Place entry order with TP/SL"""
         try:
-            # Calculate position size (use available cash)
+            # Calculate position size (use centralized risk management)
             account = self.api.get_account()
-            available_cash = float(account.cash)
-            position_size = (available_cash * 0.95) / current_price  # Use 95% of cash
+            equity = float(account.equity)
+            
+            position_size = calculate_position_size(
+                bot_id=self.bot_id,
+                account_equity=equity,
+                entry_price=current_price
+            )
+            
             position_size = round(position_size, 6)  # BTC precision
             
             if position_size < 0.0001:  # Minimum BTC position

@@ -21,6 +21,8 @@ import numpy as np
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
 
+from grok.utils.position_sizing import calculate_position_size
+
 from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 
 try:
@@ -185,6 +187,9 @@ class GLDFibonacciMomentumBot:
     def execute_trade(self, signal: int):
         """Execute trade based on signal"""
         try:
+            # Get current price first (FIXED BUG)
+            current_price = float(self.api.get_latest_quote(self.symbol).askprice)
+            
             # Check current position
             position_qty = self.get_current_position()
 
@@ -229,7 +234,7 @@ class GLDFibonacciMomentumBot:
                             qty=position_qty,
                             side='sell',
                             type='limit',
-                            limit_price=round(current_price * 1.0005, 2),  # 0.01% fee
+                            limit_price=round(current_price * 0.9995, 2),  # 0.01% fee
                             time_in_force='gtc'
                         )
                         logger.info(f"Closed long position: {position_qty} shares")
@@ -243,7 +248,7 @@ class GLDFibonacciMomentumBot:
                             qty=qty,
                             side='sell',
                             type='limit',
-                            limit_price=round(current_price * 1.0005, 2),  # 0.01% fee
+                            limit_price=round(current_price * 0.9995, 2),  # 0.01% fee
                             time_in_force='gtc'
                         )
                         logger.info(f"SELL ORDER: {qty} shares of {self.symbol} at market")
@@ -259,7 +264,7 @@ class GLDFibonacciMomentumBot:
         """Set stop loss and take profit orders"""
         try:
             # Get current price
-            current_price = self.api.get_latest_quote(self.symbol).askprice
+            current_price = float(self.api.get_latest_quote(self.symbol).askprice)
 
             if side == 'buy':
                 stop_loss_price = current_price * (1 - self.stop_loss_pct)
@@ -274,7 +279,7 @@ class GLDFibonacciMomentumBot:
                 qty=qty,
                 side='sell' if side == 'buy' else 'buy',
                 type='stop',
-                stop_price=stop_loss_price,
+                stop_price=round(stop_loss_price, 2),
                 time_in_force='gtc'
             )
 
@@ -284,7 +289,7 @@ class GLDFibonacciMomentumBot:
                 qty=qty,
                 side='sell' if side == 'buy' else 'buy',
                 type='limit',
-                limit_price=take_profit_price,
+                limit_price=round(take_profit_price, 2),
                 time_in_force='gtc'
             )
 
@@ -296,26 +301,17 @@ class GLDFibonacciMomentumBot:
     def calculate_position_size(self) -> int:
         """Calculate position size based on risk management"""
         try:
-            # Get account equity
             account = self.api.get_account()
             equity = float(account.equity)
-
-            # Risk per trade (1% of equity)
-            risk_amount = equity * 0.01
-
-            # Get current price
-            current_price = self.api.get_latest_quote(self.symbol).askprice
-
-            # Position size = risk / stop loss distance
-            stop_distance = current_price * self.stop_loss_pct
-            position_value = risk_amount / stop_distance
-            qty = int(position_value / current_price)
-
-            # Minimum 1 share, maximum based on available equity
-            qty = max(1, min(qty, int((equity * 0.1) / current_price)))
-
-            return qty
-
+            current_price = float(self.api.get_latest_quote(self.symbol).askprice)
+            
+            position_size = calculate_position_size(
+                bot_id=self.bot_id,
+                account_equity=equity,
+                entry_price=current_price
+            )
+            return int(position_size)
+            
         except Exception as e:
             logger.error(f"Error calculating position size: {e}")
             return 1  # Default to 1 share

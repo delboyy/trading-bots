@@ -22,6 +22,8 @@ import numpy as np
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
 
+from grok.utils.position_sizing import calculate_position_size
+
 from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 
 try:
@@ -284,26 +286,17 @@ class GOOGLRSIScalpingBot:
     def calculate_position_size(self) -> int:
         """Calculate position size based on risk management"""
         try:
-            # Get account equity
             account = self.api.get_account()
             equity = float(account.equity)
-
-            # Risk per trade (1% of equity)
-            risk_amount = equity * 0.01
-
-            # Get current price
-            current_price = self.api.get_latest_quote(self.symbol).askprice
-
-            # Position size = risk / stop loss distance
-            stop_distance = current_price * self.stop_loss_pct
-            position_value = risk_amount / stop_distance
-            qty = int(position_value / current_price)
-
-            # Minimum 1 share, maximum based on available equity
-            qty = max(1, min(qty, int((equity * 0.1) / current_price)))
-
-            return qty
-
+            current_price = float(self.api.get_latest_quote(self.symbol).askprice)
+            
+            position_size = calculate_position_size(
+                bot_id=self.bot_id,
+                account_equity=equity,
+                entry_price=current_price
+            )
+            return int(position_size)
+            
         except Exception as e:
             logger.error(f"Error calculating position size: {e}")
             return 1  # Default to 1 share

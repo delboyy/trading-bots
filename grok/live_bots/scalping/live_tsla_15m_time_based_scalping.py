@@ -20,6 +20,8 @@ import pandas as pd
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
 
+from grok.utils.position_sizing import calculate_position_size
+
 from alpaca_trade_api import REST, TimeFrame, TimeFrameUnit
 # from shared_utils.logger import setup_logger
 # from shared_strategies.scalping_strategy import ScalpingStrategy
@@ -349,12 +351,17 @@ class TSLATimeBasedScalpingBot:
                     signal = self.generate_signal(df)
 
                     if signal != 0:
-                        # Calculate position size (1% of account equity)
+                        # Calculate position size (use centralized risk management)
                         account = self.api.get_account()
                         equity = float(account.equity)
-                        position_value = equity * 0.01  # 1% risk
                         current_price = df['Close'].iloc[-1]
-                        quantity = position_value // current_price
+                        
+                        quantity = calculate_position_size(
+                            bot_id=self.bot_id,
+                            account_equity=equity,
+                            entry_price=current_price
+                        )
+                        quantity = int(quantity)  # TSLA shares must be integers
 
                         if quantity > 0:
                             self.execute_trade(signal, quantity)

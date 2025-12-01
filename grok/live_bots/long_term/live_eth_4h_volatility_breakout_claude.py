@@ -21,6 +21,7 @@ import schedule
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 try:
     from grok.utils.status_tracker import StatusTracker
+    from grok.utils.position_sizing import calculate_position_size
 except ImportError:
     # Fallback: create a dummy StatusTracker if import fails
     class StatusTracker:
@@ -28,6 +29,13 @@ except ImportError:
             print(f"Status update: {status}")
         def update_bot_status(self, bot_id, status):
             print(f"Status update: {status}")
+    # Fallback: create a dummy calculate_position_size if import fails
+    def calculate_position_size(bot_id: str, account_equity: float, entry_price: float) -> float:
+        # Default simple calculation if the utility function isn't available
+        max_position_size_ratio = 0.025 # Example default
+        risk_amount = account_equity * max_position_size_ratio
+        return risk_amount / entry_price
+
 
 # Setup logging
 logging.basicConfig(
@@ -175,8 +183,11 @@ class ETHVolatilityBreakoutBot:
             return pd.DataFrame()
 
     def calculate_position_size(self, account_equity: float, entry_price: float) -> float:
-        risk_amount = account_equity * self.max_position_size
-        position_size = risk_amount / entry_price
+        position_size = calculate_position_size(
+            bot_id=self.bot_id,
+            account_equity=account_equity,
+            entry_price=entry_price
+        )
         return round(position_size, 6)
 
     def place_order(self, side: str, qty: float, current_price: float = None) -> bool:

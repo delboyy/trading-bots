@@ -19,6 +19,7 @@ import schedule
 
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from grok.utils.position_sizing import calculate_position_size
 try:
     from grok.utils.status_tracker import StatusTracker
 except ImportError:
@@ -195,10 +196,11 @@ class ETHVolatilityBreakoutBot:
 
     def calculate_position_size(self, account_equity: float, entry_price: float) -> float:
         """Calculate position size based on risk management"""
-        risk_amount = account_equity * self.max_position_size
-        position_size = risk_amount / entry_price
-
-        # Round to appropriate decimal places for crypto
+        position_size = calculate_position_size(
+            bot_id=self.bot_id,
+            account_equity=account_equity,
+            entry_price=entry_price
+        )
         return round(position_size, 6)
 
     def place_order(self, side: str, qty: float, current_price: float = None) -> bool:

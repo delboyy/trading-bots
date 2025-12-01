@@ -50,6 +50,17 @@ except ImportError:
         def update_status(self, bot_id, status):
             logger.info(f"Status update: {status}")
 
+try:
+    from grok.utils.position_sizing import calculate_position_size
+except ImportError:
+    # Fallback: create a dummy calculate_position_size if import fails
+    logger.warning("Could not import calculate_position_size. Using dummy function.")
+    def calculate_position_size(bot_id, account_equity, entry_price, risk_per_trade_pct=0.01, max_risk_per_trade_pct=0.02, max_position_size_pct=0.05):
+        # Dummy implementation: use a fixed percentage of equity for position size
+        # This is a simplified fallback and might not reflect actual risk management
+        return (account_equity * max_position_size_pct) / entry_price
+
+
 class ETHVolBreakoutBot:
     def __init__(self):
         self.tracker = StatusTracker()
@@ -209,10 +220,16 @@ class ETHVolBreakoutBot:
     def place_entry_order(self, current_price, side):
         """Place entry order with TP/SL"""
         try:
-            # Calculate position size (use available cash)
+            # Calculate position size (use centralized risk management)
             account = self.api.get_account()
-            available_cash = float(account.cash)
-            position_size = (available_cash * 0.95) / current_price  # Use 95% of cash
+            equity = float(account.equity)
+            
+            position_size = calculate_position_size(
+                bot_id=self.bot_id,
+                account_equity=equity,
+                entry_price=current_price
+            )
+            
             position_size = round(position_size, 6)  # ETH precision
             
             if position_size < 0.001:  # Minimum ETH position
