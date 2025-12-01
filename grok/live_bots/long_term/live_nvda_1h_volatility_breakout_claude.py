@@ -18,7 +18,7 @@ from alpaca_trade_api import REST, TimeFrame
 import schedule
 
 # Add project root to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 from grok.utils.position_sizing import calculate_position_size
 try:
     from grok.utils.status_tracker import StatusTracker

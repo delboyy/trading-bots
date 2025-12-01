@@ -298,3 +298,4 @@ tail -f logs/googl_rsi_scalping.log
 **Need help? All bots follow the same integration pattern as your original 6 winners!**
 
 
+

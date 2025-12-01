@@ -394,3 +394,4 @@ The 0.8% daily target is **not achievable on spot BTC** without:
 
 
 
+

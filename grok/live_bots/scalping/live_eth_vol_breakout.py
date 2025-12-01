@@ -38,7 +38,7 @@ os.makedirs('logs', exist_ok=True)
 # Add project root to path for StatusTracker
 from pathlib import Path
 project_root = Path(__file__).resolve().parents[3]  # scalping/ -> live_bots/ -> grok/ -> trading-bots/
-sys.path.append(str(project_root))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 try:
     from grok.utils.status_tracker import StatusTracker
