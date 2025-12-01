@@ -22,7 +22,7 @@ import signal
 
 # Add parent directory to path for StatusTracker
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from status_tracker import StatusTracker
+from grok.utils.status_tracker import StatusTracker
 
 class ETHVolBreakoutBot:
     def __init__(self):

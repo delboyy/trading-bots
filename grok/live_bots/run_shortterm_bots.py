@@ -37,17 +37,25 @@ class LiveBotController:
         # Get the directory where this script is located
         self.bot_dir = Path(__file__).resolve().parent
 
-        # Short-term/Scalping bots (<1h timeframes) - located in scalping/ subdirectory
+        # Short-term/Scalping bots (<1h timeframes) - 7 bots
         self.bot_scripts = {
             'btc_combo': 'scalping/live_btc_combo_claude.py',
             'btc_combo_momentum': 'scalping/live_btc_combo_momentum_claude.py',
+            'eth_vol': 'scalping/live_eth_vol_breakout.py',
+            'gld_5m_candlestick': 'scalping/live_gld_5m_candlestick_scalping.py',
+            'gld_5m_fib': 'scalping/live_gld_5m_fibonacci_momentum.py',
+            'googl_15m_rsi': 'scalping/live_googl_15m_rsi_scalping.py',
             'tsla_15m_time': 'scalping/live_tsla_15m_time_based_scalping.py'
         }
 
         self.bot_info = {
             'btc_combo': {'name': 'BTC Combo Strategy (Claude)', 'description': 'Multi-indicator scalper'},
             'btc_combo_momentum': {'name': 'BTC Combo Momentum (Claude)', 'description': 'Momentum-based scalper'},
-            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Scalper - 36% Return, 64% Win Rate'}
+            'eth_vol': {'name': 'ETH Volatility Breakout', 'description': 'ETH scalping strategy'},
+            'gld_5m_candlestick': {'name': 'GLD 5m Candlestick', 'description': 'Pattern-based scalper'},
+            'gld_5m_fib': {'name': 'GLD 5m Fibonacci', 'description': 'Fib retracement scalper'},
+            'googl_15m_rsi': {'name': 'GOOGL 15m RSI', 'description': 'RSI scalping strategy'},
+            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Time-based scalper'}
         }
 
     def check_environment(self) -> bool:

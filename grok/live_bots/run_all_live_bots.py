@@ -37,62 +37,36 @@ class LiveBotController:
         # Get the directory where this script is located
         self.bot_dir = Path(__file__).resolve().parent
 
-        # All bots - 6 VALIDATED WINNERS ONLY
+        # All bots - organized by subdirectory (10 total: 3 long-term + 7 scalping)
         self.bot_scripts = {
-            # Long-term bots (>=1h timeframe)
+            # Long-term bots (from long_term/) - 3 bots
             'eth_1h': 'long_term/live_eth_1h_volatility_breakout_claude.py',
             'eth_4h': 'long_term/live_eth_4h_volatility_breakout_claude.py',
             'nvda_1h': 'long_term/live_nvda_1h_volatility_breakout_claude.py',
-            # Scalping bots (<1h timeframe)
-            'btc_combo_15m': 'scalping/live_btc_combo_claude.py',
-            'btc_combo_1d': 'scalping/live_btc_combo_momentum_claude.py',
-            'tsla_15m': 'scalping/live_tsla_15m_time_based_scalping.py',
-            # New bots
-            'gld_candlestick': 'scalping/live_gld_5m_candlestick_scalping.py',
-            'gld_fibonacci': 'scalping/live_gld_5m_fibonacci_momentum.py',
-            'googl_rsi': 'scalping/live_googl_15m_rsi_scalping.py',
+            # Scalping bots (from scalping/) - 7 bots
+            'btc_combo': 'scalping/live_btc_combo_claude.py',
+            'btc_combo_momentum': 'scalping/live_btc_combo_momentum_claude.py',
+            'eth_vol': 'scalping/live_eth_vol_breakout.py',
+            'gld_5m_candlestick': 'scalping/live_gld_5m_candlestick_scalping.py',
+            'gld_5m_fib': 'scalping/live_gld_5m_fibonacci_momentum.py',
+            'googl_15m_rsi': 'scalping/live_googl_15m_rsi_scalping.py',
+            'tsla_15m_time': 'scalping/live_tsla_15m_time_based_scalping.py'
         }
 
+
         self.bot_info = {
-            # Long-term bots (>=1h)
-            'eth_1h': {
-                'name': 'ETH 1h Volatility (Claude)', 
-                'description': '🏆 TOP: 0.248%/day, 142% annual, 2yr validated'
-            },
-            'eth_4h': {
-                'name': 'ETH 4h Volatility (Claude)', 
-                'description': '🥇 EXCELLENT: 0.203%/day, 107% annual, 2yr validated'
-            },
-            'nvda_1h': {
-                'name': 'NVDA 1h Volatility (Claude)', 
-                'description': '✅ SOLID: 0.149%/day, 72% annual, 2yr validated'
-            },
-            # Scalping bots (<1h)
-            'btc_combo_15m': {
-                'name': 'BTC Combo 15m (Claude)', 
-                'description': '🏆 TOP: 0.247%/day, 141% annual, 60d validated'
-            },
-            'btc_combo_1d': {
-                'name': 'BTC Combo Momentum 1d (Claude)', 
-                'description': '✅ KEEPER: 0.161%/day, 48% annual, 2yr validated'
-            },
-            'tsla_15m': {
-                'name': 'TSLA 15m Time-Based', 
-                'description': '✅ SOLID: 0.160%/day, 79% annual, 2yr validated'
-            },
-            # New bots
-            'gld_candlestick': {
-                'name': 'GLD Candlestick Scalping', 
-                'description': '✅ NEW: 69.45% return, 50.3% win rate, 5m scalping'
-            },
-            'gld_fibonacci': {
-                'name': 'GLD Fibonacci Momentum', 
-                'description': '✅ NEW: 66.75% return, 52.3% win rate, 5m momentum'
-            },
-            'googl_rsi': {
-                'name': 'GOOGL RSI Scalping', 
-                'description': '✅ NEW: 71.52% return, 54.1% win rate, 15m RSI'
-            }
+            # Long-term bots
+            'eth_1h': {'name': 'ETH 1h Volatility (Claude)', 'description': 'Champion strategy - 181% returns'},
+            'eth_4h': {'name': 'ETH 4h Volatility (Claude)', 'description': 'Conservative ETH - 148% returns'},
+            'nvda_1h': {'name': 'NVDA 1h Volatility (Claude)', 'description': 'Tech leader - 109% returns'},
+            # Scalping bots
+            'btc_combo': {'name': 'BTC Combo Strategy (Claude)', 'description': 'Multi-indicator scalper'},
+            'btc_combo_momentum': {'name': 'BTC Combo Momentum (Claude)', 'description': 'Momentum-based scalper'},
+            'eth_vol': {'name': 'ETH Volatility Breakout', 'description': 'ETH scalping strategy'},
+            'gld_5m_candlestick': {'name': 'GLD 5m Candlestick', 'description': 'Pattern-based scalper'},
+            'gld_5m_fib': {'name': 'GLD 5m Fibonacci', 'description': 'Fib retracement scalper'},
+            'googl_15m_rsi': {'name': 'GOOGL 15m RSI', 'description': 'RSI scalping strategy'},
+            'tsla_15m_time': {'name': 'TSLA 15m Time Scalping', 'description': 'Time-based scalper'}
         }
 
     def check_environment(self) -> bool:

@@ -37,27 +37,17 @@ class LiveBotController:
         # Get the directory where this script is located
         self.bot_dir = Path(__file__).resolve().parent
 
-        # Long-term bots (1h+ timeframes) - located in long_term/ subdirectory
+        # Long-term bots (1h+ timeframes) - 3 bots
         self.bot_scripts = {
             'eth_1h': 'long_term/live_eth_1h_volatility_breakout_claude.py',
             'eth_4h': 'long_term/live_eth_4h_volatility_breakout_claude.py',
-            'eth_1d': 'long_term/live_eth_1d_volatility_breakout.py',
-            'nvda_1h': 'long_term/live_nvda_1h_volatility_breakout_claude.py',
-            'nvda_1d': 'long_term/live_nvda_1d_volatility_breakout.py',
-            'tsla_4h_le': 'long_term/live_tsla_4h_fib_local_extrema.py',
-            'tsla_1d': 'long_term/live_tsla_1d_volatility_breakout.py',
-            'spy_1d': 'long_term/live_spy_1d_volatility_breakout.py'
+            'nvda_1h': 'long_term/live_nvda_1h_volatility_breakout_claude.py'
         }
 
         self.bot_info = {
             'eth_1h': {'name': 'ETH 1h Volatility (Claude)', 'description': 'Champion strategy - 181% returns'},
             'eth_4h': {'name': 'ETH 4h Volatility (Claude)', 'description': 'Conservative ETH - 148% returns'},
-            'eth_1d': {'name': 'ETH 1d Volatility', 'description': 'Daily Swing - 154% Return'},
-            'nvda_1h': {'name': 'NVDA 1h Volatility (Claude)', 'description': 'Tech leader - 109% returns'},
-            'nvda_1d': {'name': 'NVDA 1d Volatility', 'description': 'Daily Swing - 143% Return'},
-            'tsla_4h_le': {'name': 'TSLA 4h Fib Local Extrema', 'description': 'Swing - 100% Win Rate'},
-            'tsla_1d': {'name': 'TSLA 1d Volatility', 'description': 'Daily Swing - 144% Return'},
-            'spy_1d': {'name': 'SPY 1d Volatility', 'description': 'Daily Swing - 75% Win Rate'}
+            'nvda_1h': {'name': 'NVDA 1h Volatility (Claude)', 'description': 'Tech leader - 109% returns'}
         }
 
     def check_environment(self) -> bool:
