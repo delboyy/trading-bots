@@ -10,15 +10,30 @@ Strategy Logic:
 - Asset: ETH/USD (Alpaca crypto)
 """
 
+
 import os
 import sys
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from alpaca_trade_api.rest import REST, TimeFrame, TimeFrameUnit
-from loguru import logger
+import logging
 import time
 import signal
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/eth_vol_breakout_error.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger('ETH_VOL_BREAKOUT')
+
+# Create logs directory
+os.makedirs('logs', exist_ok=True)
 
 # Add parent directory to path for StatusTracker
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))

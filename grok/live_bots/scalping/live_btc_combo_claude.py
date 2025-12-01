@@ -112,11 +112,15 @@ class BTCComboClaudeBot:
             end = datetime.now()
             start = end - timedelta(minutes=self.timeframe_minutes * bars)
             
+            # Format dates as RFC3339 (YYYY-MM-DDTHH:MM:SSZ)
+            start_str = start.strftime('%Y-%m-%dT%H:%M:%SZ')
+            end_str = end.strftime('%Y-%m-%dT%H:%M:%SZ')
+            
             barset = self.api.get_crypto_bars(
                 self.symbol,
                 self.timeframe,
-                start=start.isoformat(),
-                end=end.isoformat()
+                start=start_str,
+                end=end_str
             ).df
             
             if barset.empty:

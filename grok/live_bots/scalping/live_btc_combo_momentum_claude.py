@@ -139,18 +139,21 @@ class BTCComboMomentumBot:
             ).df
             
             if not bars.empty:
+                # Reset index to get timestamp as a column
+                df = bars.reset_index()
+                
                 # Rename columns to match expected format
-                df = bars.rename(columns={
+                df = df.rename(columns={
+                    'timestamp': 'Time',
                     'open': 'Open',
                     'high': 'High', 
                     'low': 'Low',
                     'close': 'Close',
                     'volume': 'Volume'
-                }).copy()
-                df.reset_index(inplace=True)
-                df.rename(columns={'timestamp': 'Time'}, inplace=True)
+                })
                 
-                df.set_index('timestamp', inplace=True)
+                # Set Time as index
+                df.set_index('Time', inplace=True)
                 return df
             
             return pd.DataFrame()
