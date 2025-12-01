@@ -144,12 +144,16 @@ class NVDAVolatilityBreakoutBot:
         try:
             end_time = datetime.now()
             start_time = end_time - timedelta(hours=hours)
+            
+            # For stocks, use date format (YYYY-MM-DD)
+            start_str = start_time.strftime('%Y-%m-%d')
+            end_str = end_time.strftime('%Y-%m-%d')
 
             bars = self.api.get_bars(
                 self.symbol,
                 self.timeframe,
-                start=start_time.isoformat(timespec='seconds'),
-                end=end_time.isoformat(timespec='seconds'),
+                start=start_str,
+                end=end_str,
                 limit=1000
             )
 

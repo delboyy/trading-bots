@@ -164,14 +164,14 @@ class BTCComboMomentumBot:
     def calculate_indicators(self, df):
         """Calculate momentum, volume, and trend indicators"""
         # Momentum
-        df['momentum'] = df['close'].pct_change(self.momentum_period) * 100
+        df['momentum'] = df['Close'].pct_change(self.momentum_period) * 100
         
         # Volume MA
-        df['volume_ma'] = df['volume'].rolling(20).mean()
+        df['volume_ma'] = df['Volume'].rolling(20).mean()
         
         # EMA trend
-        df['ema_fast'] = df['close'].ewm(span=12, adjust=False).mean()
-        df['ema_slow'] = df['close'].ewm(span=26, adjust=False).mean()
+        df['ema_fast'] = df['Close'].ewm(span=12, adjust=False).mean()
+        df['ema_slow'] = df['Close'].ewm(span=12, adjust=False).mean()
         
         return df
 
@@ -200,8 +200,8 @@ class BTCComboMomentumBot:
         if momentum_ok and volume_ok and trend_ok:
             return {
                 'type': 'LONG',
-                'price': current['close'],
-                'reason': f'Mom:{current["momentum"]:.2f}% Vol:{current["volume"]/current["volume_ma"]:.2f}x Trend:UP'
+                'price': current['Close'],
+                'reason': f'Mom:{current["momentum"]:.2f}% Vol:{current["Volume"]/current["volume_ma"]:.2f}x Trend:UP'
             }
 
         return None
@@ -286,7 +286,7 @@ class BTCComboMomentumBot:
 
             df = self.get_historical_data(limit=5)
             if not df.empty:
-                exit_price = df['close'].iloc[-1]
+                exit_price = df['Close'].iloc[-1]
                 pnl = (exit_price - self.entry_price) / self.entry_price
                 pnl_dollars = self.position * (exit_price - self.entry_price)
                 bars_held = self.current_bar - self.entry_bar
@@ -343,7 +343,7 @@ class BTCComboMomentumBot:
                     continue
 
                 self.current_bar += 1
-                current_price = df['close'].iloc[-1]
+                current_price = df['Close'].iloc[-1]
 
                 if self.position > 0:
                     should_exit, exit_reason = self.check_exit_conditions(current_price)

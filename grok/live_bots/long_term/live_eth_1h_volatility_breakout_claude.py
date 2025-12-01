@@ -154,12 +154,16 @@ class ETHVolatilityBreakoutBot:
         try:
             end_time = datetime.now()
             start_time = end_time - timedelta(hours=hours)
+            
+            # Format as RFC3339 (YYYY-MM-DDTHH:MM:SSZ)
+            start_str = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+            end_str = end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
             bars = self.api.get_crypto_bars(
                 self.symbol,
                 self.timeframe,
-                start=start_time.isoformat(timespec='seconds'),
-                end=end_time.isoformat(timespec='seconds'),
+                start=start_str,
+                end=end_str,
                 limit=1000
             )
 

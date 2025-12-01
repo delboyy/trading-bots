@@ -35,9 +35,20 @@ logger = logging.getLogger('ETH_VOL_BREAKOUT')
 # Create logs directory
 os.makedirs('logs', exist_ok=True)
 
-# Add parent directory to path for StatusTracker
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from grok.utils.status_tracker import StatusTracker
+# Add project root to path for StatusTracker
+from pathlib import Path
+project_root = Path(__file__).resolve().parents[3]  # scalping/ -> live_bots/ -> grok/ -> trading-bots/
+sys.path.append(str(project_root))
+
+try:
+    from grok.utils.status_tracker import StatusTracker
+except ImportError:
+    # Fallback: create a dummy StatusTracker if import fails
+    class StatusTracker:
+        def update_bot_status(self, bot_id, status):
+            logger.info(f"Status update: {status}")
+        def update_status(self, bot_id, status):
+            logger.info(f"Status update: {status}")
 
 class ETHVolBreakoutBot:
     def __init__(self):
