@@ -292,7 +292,7 @@ class ETHVolBreakoutBot:
             logger.info(f"🛑 SL order placed @ ${sl_price:,.2f}")
             
             # Update tracker
-            self.tracker.update_bot_status(self.bot_id, {
+            self.tracker.update_status(self.bot_id, {
                 'in_position': True,
                 'position_side': side,
                 'entry_price': current_price,
@@ -355,7 +355,7 @@ class ETHVolBreakoutBot:
             self.current_capital += pnl
             
             # Update tracker
-            self.tracker.update_bot_status(self.bot_id, {
+            self.tracker.update_status(self.bot_id, {
                 'in_position': False,
                 'last_pnl': pnl,
                 'last_pnl_pct': pnl_pct,
@@ -379,7 +379,7 @@ class ETHVolBreakoutBot:
         logger.info(f"🤖 Starting ETH Vol Breakout Bot (1h)")
         
         # Initialize tracker
-        self.tracker.update_bot_status(self.bot_id, {
+        self.tracker.update_status(self.bot_id, {
             'name': 'ETH Vol Breakout 1h',
             'strategy': 'Z-Score + ATR Volatility Breakout',
             'status': 'running',
@@ -420,7 +420,7 @@ class ETHVolBreakoutBot:
                         position_side = None
                 
                 # Update tracker
-                self.tracker.update_bot_status(self.bot_id, {
+                self.tracker.update_status(self.bot_id, {
                     'last_update': datetime.now().isoformat(),
                     'current_price': current_price,
                     'z_score': z_score,
