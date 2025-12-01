@@ -69,7 +69,7 @@ class ETHVolatilityBreakoutBot:
 
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
-        self.symbol = 'ETHUSD'
+        self.symbol = 'ETH/USD'
         self.timeframe = TimeFrame(4, TimeFrameUnit.Hour)
         self.atr_window = 14
         self.k = 2.0

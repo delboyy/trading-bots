@@ -63,7 +63,7 @@ class ETHVolatilityBreakoutBot:
         self.api = REST(self.api_key, self.api_secret, self.base_url)
 
         # Strategy parameters
-        self.symbol = 'ETHUSD'  # Alpaca uses ETHUSD for Ethereum
+        self.symbol = 'ETH/USD'  # Alpaca uses ETHUSD for Ethereum
         self.timeframe = TimeFrame.Hour
         self.atr_window = 14
         self.k = 2.0

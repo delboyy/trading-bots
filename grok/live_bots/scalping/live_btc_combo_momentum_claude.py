@@ -151,7 +151,7 @@ class BTCComboMomentumBot:
                     'high': 'High', 
                     'low': 'Low',
                     'close': 'Close',
-                    'volume': 'Volume'
+                    'Volume': 'Volume'
                 })
                 
                 # Set Time as index
@@ -196,7 +196,7 @@ class BTCComboMomentumBot:
 
         # ENTRY CONDITIONS
         momentum_ok = current['momentum'] > 0.5  # Positive momentum
-        volume_ok = current['volume'] > current['volume_ma'] * self.volume_multiplier
+        volume_ok = current['Volume'] > current['volume_ma'] * self.volume_multiplier
         trend_ok = current['ema_fast'] > current['ema_slow']  # Uptrend
 
         if momentum_ok and volume_ok and trend_ok:

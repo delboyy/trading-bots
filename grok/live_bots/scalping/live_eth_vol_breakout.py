@@ -116,8 +116,8 @@ class ETHVolBreakoutBot:
             barset = self.api.get_crypto_bars(
                 self.symbol,
                 self.timeframe,
-                start=start.isoformat(),
-                end=end.isoformat()
+                start=start.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                end=end.strftime('%Y-%m-%dT%H:%M:%SZ')
             ).df
             
             if barset.empty:
