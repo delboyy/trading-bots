@@ -151,7 +151,7 @@ class BTCComboMomentumBot:
                     'high': 'High', 
                     'low': 'Low',
                     'close': 'Close',
-                    'Volume': 'Volume'
+                    'volume': 'Volume'  # Alpaca returns lowercase 'volume'
                 })
                 
                 # Set Time as index
